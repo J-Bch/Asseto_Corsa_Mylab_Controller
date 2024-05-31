@@ -18,10 +18,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
+
+#include "MIPS-Asseto_Corsa.h"
 #include "lib/uart.h"
 #include "lib/lcd.h"
 
-#include <stdio.h>
+
 
 typedef struct __attribute__ ((__packed__)) _uart_telemetry
 {
@@ -35,6 +38,23 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 bool screen_whiped = false;
 
 int main(void)
+{
+	LPC_GPIO2->FIODIR &= ~(1); //dip switch 0 to input
+
+	if((LPC_GPIO2->FIOPIN & 0b1) == 0)
+	{
+		dashboard_main();
+	}
+	else
+	{
+		driving_wheel_main();
+	}
+    return 0 ;
+}
+
+
+
+void dashboard_main()
 {
 	uart_init();
 	lcd_init();
@@ -74,5 +94,10 @@ int main(void)
 
 
 	}
-    return 0 ;
+}
+
+
+void driving_wheel_main()
+{
+
 }
