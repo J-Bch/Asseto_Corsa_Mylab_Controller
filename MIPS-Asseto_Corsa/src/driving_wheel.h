@@ -8,6 +8,6 @@
 #ifndef DRIVING_WHEEL_H_
 #define DRIVING_WHEEL_H_
 
-
+void driving_wheel_main();
 
 #endif /* DRIVING_WHEEL_H_ */

@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "dashboard.h"
+#include "driving_wheel.h"
 #include "lib/uart.h"
 #include "lib/lcd.h"
 #include "lib/can.h"
@@ -41,10 +42,3 @@ int main(void)
 	}
     return 0 ;
 }
-
-
-
-
-
-
-
