@@ -18,8 +18,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "uart.h"
-#include "lcd.h"
+#include "lib/uart.h"
+#include "lib/lcd.h"
 
 #include <stdio.h>
 
