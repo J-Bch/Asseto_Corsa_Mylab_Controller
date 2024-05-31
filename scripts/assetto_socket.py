@@ -12,7 +12,9 @@ from datetime import datetime
 
 UDP_IP = "127.0.0.1"
 UDP_PORT = 9996
+SOCKET_TIMEOUT = 5
 last_time_sent = datetime.now()
+last_time_udp_recieved = datetime.now()
 
     
 #############
@@ -23,6 +25,7 @@ last_time_sent = datetime.now()
 def socket_send(msg):
     sock.sendto(msg, (UDP_IP, UDP_PORT))
 
+
 def socket_callback(callback: any):
     while(1):
         data_raw, addr = sock.recvfrom(1024)
@@ -31,10 +34,18 @@ def socket_callback(callback: any):
 ## Logic
 
 def handshake():
-    # first handshake
-    socket_send(bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'))
-    
-    data_raw, _ = sock.recvfrom(408)
+    data_raw = []
+
+    recieved = False
+    while(recieved == False):
+        # first handshake
+        socket_send(bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'))
+
+        try:
+            data_raw, _ = sock.recvfrom(408)
+            recieved = True
+        except socket.timeout:
+            print("Socket recieve timeout, retrying")
 
     data_dict = {
         "car_name": data_raw[0:50:2],
@@ -52,6 +63,7 @@ def handshake():
 
 def receive_n_send(data_raw, _):
     global last_time_sent
+    last_time_udp_recieved = datetime.now()
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
     duration = datetime.now() - last_time_sent
     if(duration.microseconds > 900000):
@@ -75,13 +87,22 @@ print("UDP target port: %s" % UDP_PORT)
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
 
+sock.settimeout(SOCKET_TIMEOUT)
+
 print("Listening...")
 
 metadata = handshake()
 
 uart_send.init_serial()   
 
-socket_callback(receive_n_send)
+while True:
+    socket_callback(receive_n_send)
+
+    if((datetime.now() - last_time_udp_recieved).seconds > 5):
+        print("No response, resending handshake")
+        metadata = handshake()
+
+        uart_send.init_serial()  
  
 
 
