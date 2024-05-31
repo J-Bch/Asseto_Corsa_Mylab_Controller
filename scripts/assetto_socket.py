@@ -1,5 +1,9 @@
 import socket
 import unpack_struct
+import uart_send
+import struct
+import time
+from datetime import datetime
 # infos: https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub
 
 
@@ -8,6 +12,7 @@ import unpack_struct
 
 UDP_IP = "127.0.0.1"
 UDP_PORT = 9996
+last_time_sent = datetime.now()
 
     
 #############
@@ -46,8 +51,18 @@ def handshake():
     return data_dict
 
 def receive_n_send(data_raw, _):
+    global last_time_sent
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
-    print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
+    duration = datetime.now() - last_time_sent
+    if(duration.microseconds > 900000):
+        last_time_sent = datetime.now()
+        print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
+        uart_send.serial_send(struct.pack("f", live_data['speed_Kmh']))
+        uart_send.serial_send(struct.pack("I", live_data['lapTime']))
+        uart_send.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
+        uart_send.serial_send(struct.pack("f", live_data['gas']))
+        uart_send.serial_send(struct.pack("?", live_data['isAbsEnabled']))
+
     
 
 #########
@@ -63,6 +78,9 @@ print("Listening...")
 
 metadata = handshake()
 
+uart_send.init_serial()   
+
 socket_callback(receive_n_send)
+ 
 
 

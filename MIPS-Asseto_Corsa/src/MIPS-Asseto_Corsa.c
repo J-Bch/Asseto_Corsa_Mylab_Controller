@@ -15,25 +15,64 @@
 #endif
 
 #include <cr_section_macros.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include "uart.h"
+#include "lcd.h"
 
 #include <stdio.h>
 
-// TODO: insert other include files here
+typedef struct __attribute__ ((__packed__)) _uart_telemetry
+{
+	float speed_kmh;
+	uint32_t lap_time;
+	float wheel_angular_speed_0;
+	float gas;
+	bool is_abs_enabled;
+}uart_telemetry;
 
-// TODO: insert other definitions and declarations here
+bool screen_whiped = false;
 
-int main(void) {
+int main(void)
+{
+	uart_init();
+	lcd_init();
 
-    printf("Hello World\n");
+	screen_whiped = true;
 
-    // Force the counter to be placed into memory
-    volatile static int i = 0 ;
-    // Enter an infinite loop, just incrementing a counter
-    while(1) {
-        i++ ;
-        // "Dummy" NOP to allow source level single
-        // stepping of tight while() loop
-        __asm volatile ("nop");
-    }
+	char buffer[sizeof(uart_telemetry)];
+
+	while(1)
+	{
+		for(int i = 0; i < sizeof(uart_telemetry); i++)
+		{
+			buffer[i] = uart_get_char();
+		}
+
+		uart_telemetry* telem = (uart_telemetry*)buffer;
+
+		printf("Speed : %f\n", telem->speed_kmh);
+		printf("Lap time : %i\n", telem->lap_time);
+		printf("Wheel 0 angular :%f\n", telem->wheel_angular_speed_0);
+		printf("gas : %f\n", telem->gas);
+		printf("Abs enabled ? : %i\n", telem->is_abs_enabled);
+
+		if(telem->is_abs_enabled)
+		{
+			write_text_small_font("Abs enabled", 31, 0, 0, 0, 0, 0, 0, 0, 240);
+
+			screen_whiped = false;
+		}
+		else if (!screen_whiped)
+		{
+			whipe_screen();
+			screen_whiped = true;
+		}
+
+		printf("\n");
+
+
+	}
     return 0 ;
 }
