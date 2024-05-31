@@ -62,6 +62,7 @@ def receive_n_send(data_raw, _):
         uart_send.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
         uart_send.serial_send(struct.pack("f", live_data['gas']))
         uart_send.serial_send(struct.pack("?", live_data['isAbsEnabled']))
+        uart_send.serial_send(struct.pack("?", live_data['isTcEnabled']))
 
     
 

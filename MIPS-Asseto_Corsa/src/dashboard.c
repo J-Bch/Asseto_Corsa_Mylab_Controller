@@ -25,6 +25,7 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	float wheel_angular_speed_0;
 	float gas;
 	bool is_abs_enabled;
+	bool is_tc_enabled;
 }uart_telemetry;
 
 bool screen_whiped = false;
@@ -55,10 +56,23 @@ void dashboard_main()
 		printf("Wheel 0 angular :%f\n", telem->wheel_angular_speed_0);
 		printf("gas : %f\n", telem->gas);
 		printf("Abs enabled ? : %i\n", telem->is_abs_enabled);
+		printf("TC enabled ? : %i\n", telem->is_tc_enabled);
 
 		if(telem->is_abs_enabled)
 		{
 			write_text_small_font("Abs enabled", 31, 0, 0, 0, 0, 0, 0, 0, 240);
+
+			screen_whiped = false;
+		}
+		else if (!screen_whiped)
+		{
+			whipe_screen();
+			screen_whiped = true;
+		}
+
+		if(telem->is_tc_enabled)
+		{
+			write_text_small_font("TC enabled", 31, 0, 0, 0, 0, 0, 0, 20, 240);
 
 			screen_whiped = false;
 		}
