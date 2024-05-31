@@ -40,8 +40,8 @@
 #define BUFFER_SIZE 256
 
 char circular_buffer[BUFFER_SIZE];
-int head = 0;
-int tail = 0;
+int head_uart = 0;
+int tail_uart = 0;
 
 
 void uart_init()
@@ -118,25 +118,25 @@ void uart_send(char *value, uint8_t size)
 
 char uart_get_char()
 {
-	while(tail == head); //wait if no char has been received
+	while(tail_uart == head_uart); //wait if no char has been received
 
 	NVIC_DisableIRQ(UART0_IRQn);
-	char c = circular_buffer[tail];
-	tail = (tail + 1) % BUFFER_SIZE;
+	char c = circular_buffer[tail_uart];
+	tail_uart = (tail_uart + 1) % BUFFER_SIZE;
 	NVIC_EnableIRQ(UART0_IRQn);
 	return c;
 }
 
 void put_char(char c)
 {
-	circular_buffer[head] = c;
-	head = (head + 1) % BUFFER_SIZE;
+	circular_buffer[head_uart] = c;
+	head_uart = (head_uart + 1) % BUFFER_SIZE;
 }
 
 void clear()
 {
-	tail = 0;
-	head = 0;
+	tail_uart = 0;
+	head_uart = 0;
 }
 
 

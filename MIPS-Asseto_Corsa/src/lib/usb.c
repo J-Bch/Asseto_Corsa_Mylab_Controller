@@ -14,7 +14,7 @@ void USB_IRQHandler(){
 }
 
 
-void usb_init(){
-	LPC_SC->PCONP |= 1 << PCUSB;
-	LPC_USB->
-}
+//void usb_init(){
+//	LPC_SC->PCONP |= 1 << PCUSB;
+//	LPC_USB->
+//}
