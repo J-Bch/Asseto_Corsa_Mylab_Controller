@@ -29,7 +29,8 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	uint32_t message_counter;
 }uart_telemetry;
 
-bool screen_whiped = false;
+bool abs_text_whiped = false;
+bool tc_text_whiped = false;
 
 uint32_t internal_message_counter = 0;
 
@@ -40,8 +41,6 @@ void dashboard_main()
 	can_init();
 
 	callback_add(CAN_IRQn, &can_dashboard_recieve_handler);
-
-	screen_whiped = true;
 
 	char buffer[sizeof(uart_telemetry)];
 	internal_message_counter = 0;
@@ -73,26 +72,26 @@ void dashboard_main()
 
 		if(telem->is_abs_enabled)
 		{
-			write_text_small_font("Abs enabled", 31, 0, 0, 0, 0, 0, 0, 0, 240);
+			write_text_small_font("ABS enabled", 31, 0, 0, 0, 0, 0, 0, 0, 240);
 
-			screen_whiped = false;
+			abs_text_whiped = false;
 		}
-		else if (!screen_whiped)
+		else if (!abs_text_whiped)
 		{
-			whipe_screen();
-			screen_whiped = true;
+			draw_square(0, 0, 8*sizeof("ABS enabled"), 12, 0, 0, 0);
+			abs_text_whiped = true;
 		}
 
 		if(telem->is_tc_enabled)
 		{
 			write_text_small_font("TC enabled", 31, 0, 0, 0, 0, 0, 0, 20, 240);
 
-			screen_whiped = false;
+			tc_text_whiped = false;
 		}
-		else if (!screen_whiped)
+		else if (!tc_text_whiped)
 		{
-			whipe_screen();
-			screen_whiped = true;
+			draw_square(0, 20, 8*sizeof("TC enabled"), 12, 0, 0, 0);
+			tc_text_whiped = true;
 		}
 
 		printf("\n");
