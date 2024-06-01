@@ -28,8 +28,14 @@ def socket_send(msg):
 
 def socket_callback(callback: any):
     while(1):
-        data_raw, addr = sock.recvfrom(1024)
-        callback(data_raw, addr)
+        try:
+            data_raw, addr = sock.recvfrom(1024)
+            callback(data_raw, addr)
+        except socket.timeout: 
+            print("Socket callback receive timeout, restarting communication")
+
+            metadata = handshake()
+            uart_send.init_serial()
 
 ## Logic
 
@@ -45,7 +51,7 @@ def handshake():
             data_raw, _ = sock.recvfrom(408)
             recieved = True
         except socket.timeout:
-            print("Socket recieve timeout, retrying")
+            print("Socket handshake receive timeout, retrying")
 
     data_dict = {
         "car_name": data_raw[0:50:2],
@@ -95,14 +101,7 @@ metadata = handshake()
 
 uart_send.init_serial()   
 
-while True:
-    socket_callback(receive_n_send)
-
-    if((datetime.now() - last_time_udp_recieved).seconds > 5):
-        print("No response, resending handshake")
-        metadata = handshake()
-
-        uart_send.init_serial()  
+socket_callback(receive_n_send) 
  
 
 
