@@ -9,5 +9,6 @@
 #define DASHBOARD_H_
 
 void dashboard_main();
+void dashboard_reset_uart_communication();
 
 #endif /* DASHBOARD_H_ */

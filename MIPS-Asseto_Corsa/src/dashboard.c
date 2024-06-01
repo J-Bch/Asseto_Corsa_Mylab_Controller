@@ -26,9 +26,12 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	float gas;
 	bool is_abs_enabled;
 	bool is_tc_enabled;
+	uint32_t message_counter;
 }uart_telemetry;
 
 bool screen_whiped = false;
+
+uint32_t internal_message_counter = 0;
 
 void dashboard_main()
 {
@@ -41,6 +44,7 @@ void dashboard_main()
 	screen_whiped = true;
 
 	char buffer[sizeof(uart_telemetry)];
+	internal_message_counter = 0;
 
 	while(1)
 	{
@@ -57,6 +61,15 @@ void dashboard_main()
 		printf("gas : %f\n", telem->gas);
 		printf("Abs enabled ? : %i\n", telem->is_abs_enabled);
 		printf("TC enabled ? : %i\n", telem->is_tc_enabled);
+		printf("Received message counter : %i\n", telem->message_counter);
+		printf("Internal message counter : %i\n", internal_message_counter);
+
+		if(internal_message_counter != telem->message_counter)
+		{
+			printf("Counter missmatch, resseting comm\n");
+			dashboard_reset_uart_communication();
+			return;
+		}
 
 		if(telem->is_abs_enabled)
 		{
@@ -84,6 +97,8 @@ void dashboard_main()
 
 		printf("\n");
 
+		internal_message_counter++;
+
 
 	}
 }
@@ -91,4 +106,11 @@ void dashboard_main()
 void can_dashboard_recieve_handler()
 {
 
+}
+
+void dashboard_reset_uart_communication()
+{
+	uart_clear();
+	uart_send("RESET", 5);
+	dashboard_main();
 }

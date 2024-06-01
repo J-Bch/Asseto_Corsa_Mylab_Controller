@@ -21,3 +21,9 @@ def serial_send(value):
     ser.write(value)
 
 
+def serial_get_nonblock():
+    global ser
+    value = ser.read_all()
+    return value
+
+

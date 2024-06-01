@@ -133,7 +133,7 @@ void put_char(char c)
 	head_uart = (head_uart + 1) % BUFFER_SIZE;
 }
 
-void clear()
+void uart_clear()
 {
 	tail_uart = 0;
 	head_uart = 0;

@@ -1,6 +1,6 @@
 import socket
 import unpack_struct
-import uart_send
+import uart
 import struct
 import time
 from datetime import datetime
@@ -14,8 +14,7 @@ UDP_IP = "127.0.0.1"
 UDP_PORT = 9996
 SOCKET_TIMEOUT = 5
 last_time_sent = datetime.now()
-last_time_udp_recieved = datetime.now()
-
+message_counter = 0
     
 #############
 # Function
@@ -35,11 +34,16 @@ def socket_callback(callback: any):
             print("Socket callback receive timeout, restarting communication")
 
             metadata = handshake()
-            uart_send.init_serial()
+            uart.init_serial()
+            
 
 ## Logic
 
 def handshake():
+
+    global message_counter
+    message_counter = 0
+    
     data_raw = []
 
     recieved = False
@@ -69,18 +73,30 @@ def handshake():
 
 def receive_n_send(data_raw, _):
     global last_time_sent
+    global message_counter
+
+    if(uart.serial_get_nonblock() == b'RESET'):
+        print("Reset recieved, resetting")
+        metadata = handshake()
+        uart.init_serial()
+        return
+
     last_time_udp_recieved = datetime.now()
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
     duration = datetime.now() - last_time_sent
     if(duration.microseconds > 900000):
         last_time_sent = datetime.now()
         print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
-        uart_send.serial_send(struct.pack("f", live_data['speed_Kmh']))
-        uart_send.serial_send(struct.pack("I", live_data['lapTime']))
-        uart_send.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
-        uart_send.serial_send(struct.pack("f", live_data['gas']))
-        uart_send.serial_send(struct.pack("?", live_data['isAbsEnabled']))
-        uart_send.serial_send(struct.pack("?", live_data['isTcEnabled']))
+        uart.serial_send(struct.pack("f", live_data['speed_Kmh']))
+        uart.serial_send(struct.pack("I", live_data['lapTime']))
+        uart.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
+        uart.serial_send(struct.pack("f", live_data['gas']))
+        uart.serial_send(struct.pack("?", live_data['isAbsEnabled']))
+        uart.serial_send(struct.pack("?", live_data['isTcEnabled']))
+        
+        uart.serial_send(struct.pack("I", message_counter))
+        
+        message_counter += 1
 
     
 
@@ -99,7 +115,7 @@ print("Listening...")
 
 metadata = handshake()
 
-uart_send.init_serial()   
+uart.init_serial()   
 
 socket_callback(receive_n_send) 
  
