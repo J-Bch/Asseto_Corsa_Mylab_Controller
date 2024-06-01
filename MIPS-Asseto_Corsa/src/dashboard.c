@@ -15,6 +15,7 @@
 #include "lib/lcd.h"
 #include "lib/can.h"
 #include "lib/callback.h"
+#include "lib/dashboard_gui.h"
 
 void can_dashboard_recieve_handler();
 
@@ -24,6 +25,7 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	uint32_t lap_time;
 	float wheel_angular_speed_0;
 	float gas;
+	float brake;
 	bool is_abs_enabled;
 	bool is_tc_enabled;
 	uint32_t message_counter;
@@ -93,6 +95,15 @@ void dashboard_main()
 			draw_square(0, 20, 8*sizeof("TC enabled"), 12, 0, 0, 0);
 			tc_text_whiped = true;
 		}
+
+
+		gui_draw_accel_bar(100, 100, 10, 100, telem->gas);
+		gui_draw_brake_bar(120, 100, 10, 100, telem->brake);
+
+
+
+
+
 
 		printf("\n");
 

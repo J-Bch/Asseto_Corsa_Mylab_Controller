@@ -13,6 +13,7 @@ from datetime import datetime
 UDP_IP = "127.0.0.1"
 UDP_PORT = 9996
 SOCKET_TIMEOUT = 5
+MESSAGE_SENT_WAIT_MICROSECONDS = 100000
 last_time_sent = datetime.now()
 message_counter = 0
     
@@ -84,16 +85,17 @@ def receive_n_send(data_raw, _):
     last_time_udp_recieved = datetime.now()
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
     duration = datetime.now() - last_time_sent
-    if(duration.microseconds > 900000):
+    if(duration.microseconds > MESSAGE_SENT_WAIT_MICROSECONDS):
         last_time_sent = datetime.now()
         print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
         uart.serial_send(struct.pack("f", live_data['speed_Kmh']))
         uart.serial_send(struct.pack("I", live_data['lapTime']))
         uart.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
         uart.serial_send(struct.pack("f", live_data['gas']))
+        uart.serial_send(struct.pack("f", live_data['brake']))
         uart.serial_send(struct.pack("?", live_data['isAbsEnabled']))
         uart.serial_send(struct.pack("?", live_data['isTcEnabled']))
-        
+
         uart.serial_send(struct.pack("I", message_counter))
         
         message_counter += 1
