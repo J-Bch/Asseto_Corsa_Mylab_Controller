@@ -11,10 +11,12 @@
 
 #include "LPC17xx.h"
 #include "driving_wheel.h"
+#include "lib/accelerometer.h"
 #include "lib/can.h"
 #include "lib/callback.h"
 #include "lib/custom_gui.h"
 #include "lib/lcd.h"
+#include "lib/i2c.h"
 
 
 
@@ -32,8 +34,8 @@ void driving_wheel_main()
 	callback_add(CAN_IRQn, &can_wheel_recieve_handler);
 
 	float accelerometer_values_real_world[3];
-	int16_t accelerometer_can_values[3];
-	uint8_t accelerometer_can_values_splitted[6];
+//	int16_t accelerometer_can_values[3];
+//	uint8_t accelerometer_can_values_splitted[6];
 
 	while(1)
 	{

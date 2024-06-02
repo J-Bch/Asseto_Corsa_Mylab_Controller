@@ -9,6 +9,7 @@
 #include "can.h"
 #include "LPC17xx.h"
 #include "callback.h"
+#include "circular_buffer.h"
 #include <stdio.h>
 
 
@@ -117,14 +118,20 @@ typedef struct _can_msg {
 }can_msg;
 
 can_msg last_can_msg;
-can_msg circular_can_buffer[CIRCULAR_BUFFER_SIZE];
-uint8_t head_can = 0;
-uint8_t tail_can = 0;
+//can_msg circular_can_buffer[CIRCULAR_BUFFER_SIZE];
+//uint8_t head_can = 0;
+//uint8_t tail_can = 0;
+
+DEFINE_CIRCULAR_BUFFER(can_msg, can, CIRCULAR_BUFFER_SIZE);
+can_circular_buffer can_buffer;
+
 uint8_t message_to_read_number = 0;
 
 
 void can_init()
 {
+
+	can_circular_buffer_init(&can_buffer);
 	//Power
 	LPC_SC->PCONP |= (0b1 << PCCAN1);
 
@@ -247,28 +254,28 @@ void CAN_IRQHandler(void)
 {
 	if(((LPC_CAN1->RFS >> FF) & 0b1) == 1) //if ff bit of CAN1RFS, id is 29b
 	{
-		circular_can_buffer[head_can].id = LPC_CAN1->RID & 0x1FFFFFFF;
+		can_buffer.buffer[can_buffer.head].id = LPC_CAN1->RID & 0x1FFFFFFF;
 	}
 	else
 	{
-		circular_can_buffer[head_can].id = LPC_CAN1->RID & 0x7FF;
+		can_buffer.buffer[can_buffer.head].id = LPC_CAN1->RID & 0x7FF;
 	}
 
-	circular_can_buffer[head_can].dlc = ((LPC_CAN1->RFS >> DLC) & 0b1111);
+	can_buffer.buffer[can_buffer.head].dlc =  ((LPC_CAN1->RFS >> DLC) & 0b1111);
 
-	for(int i = 0; i < circular_can_buffer[head_can].dlc; i++)
+	for(int i = 0; i < can_buffer.buffer[can_buffer.head].dlc; i++)
 	{
 		if(i < 4)
 		{
-			circular_can_buffer[head_can].data[i] = (LPC_CAN1->RDA >> 8*i) & 0xFF;
+			can_buffer.buffer[can_buffer.head].data[i] = (LPC_CAN1->RDA >> 8*i) & 0xFF;
 		}
 		else
 		{
-			circular_can_buffer[head_can].data[i] = (LPC_CAN1->RDB >> 8*(i-4)) & 0xFF;
+			can_buffer.buffer[can_buffer.head].data[i] = (LPC_CAN1->RDB >> 8*(i-4)) & 0xFF;
 		}
 	}
 
-	head_can = (head_can + 1) % CIRCULAR_BUFFER_SIZE;
+	can_buffer.head = (can_buffer.head + 1 ) % CIRCULAR_BUFFER_SIZE;
 	message_to_read_number++;
 
 	LPC_CAN1->CMR = (0b1 << RRB); //clear interrupt
@@ -280,7 +287,7 @@ void CAN_IRQHandler(void)
 
 uint32_t can_get_last_id()
 {
-	return circular_can_buffer[tail_can].id;
+	return can_buffer.buffer[can_buffer.tail].id;
 }
 
 uint8_t* can_get_last_data()
@@ -290,9 +297,9 @@ uint8_t* can_get_last_data()
 
 void can_get_message(uint32_t* recieved_id, uint8_t** recieved_data)
 {
-	*recieved_id = circular_can_buffer[tail_can].id;
-	*recieved_data = circular_can_buffer[tail_can].data;
-	tail_can = (tail_can + 1) % CIRCULAR_BUFFER_SIZE;
+	*recieved_id =  can_buffer.buffer[can_buffer.tail].id;
+	*recieved_data = can_buffer.buffer[can_buffer.tail].data;
+	can_buffer.tail = (can_buffer.tail + 1) % CIRCULAR_BUFFER_SIZE;
 	message_to_read_number--;
 }
 
