@@ -24,12 +24,22 @@ void driving_wheel_main()
 {
 	lcd_init();
 	can_init();
+	i2c_init();
+	delay(100); //wait for the accelerometer to boot
+	accelerometer_init();
+	accelerometer_config();
 
 	callback_add(CAN_IRQn, &can_wheel_recieve_handler);
+
+	float accelerometer_values_real_world[3];
+	int16_t accelerometer_can_values[3];
+	uint8_t accelerometer_can_values_splitted[6];
 
 	while(1)
 	{
 		callback_do();
+		accelerometer_get_real_world_value(accelerometer_values_real_world);
+//		printf("%f\n", accelerometer_values_real_world[0]);
 	}
 }
 
