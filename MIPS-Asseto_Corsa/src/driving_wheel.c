@@ -5,23 +5,45 @@
  *      Author: joachim
  */
 
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 #include "LPC17xx.h"
 #include "driving_wheel.h"
 #include "lib/can.h"
 #include "lib/callback.h"
+#include "lib/custom_gui.h"
+#include "lib/lcd.h"
+
 
 
 void can_wheel_recieve_handler();
 
 void driving_wheel_main()
 {
+	lcd_init();
 	can_init();
 
 	callback_add(CAN_IRQn, &can_wheel_recieve_handler);
+
+	while(1)
+	{
+		callback_do();
+	}
 }
 
 
 void can_wheel_recieve_handler()
 {
+	uint32_t received_id;
+	uint8_t* received_data;
 
+	can_get_message(&received_id, &received_data);
+
+	uint32_t speed = (received_data[0] + (received_data[1] << 8) + (received_data[2] << 16) + (received_data[3] << 24));
+	gui_draw_speed(10, 0, speed);
+
+//
+//	printf("%f\n", speed_adjusted);
 }
