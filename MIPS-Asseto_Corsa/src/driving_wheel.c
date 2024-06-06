@@ -27,6 +27,7 @@ void driving_wheel_main()
 	lcd_init();
 	can_init();
 	i2c_init();
+	btns_init();
 	delay(100); //wait for the accelerometer to boot
 	accelerometer_init();
 	accelerometer_config();
