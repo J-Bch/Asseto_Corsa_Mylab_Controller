@@ -9,7 +9,9 @@
 #define LIB_BUTTONS_C_
 
 #include <stdio.h>
+#include "buttons.h"
 #include "LPC17xx.h"
+#include "callback.h"
 
 
 #define BTN_B 19 // P0.19
@@ -45,7 +47,7 @@ void EINT3_IRQHandler()
 	{
 		LPC_GPIOINT->IO0IntClr = (0b1 << BTN_B);
 
-		printf("B rising\n");
+		callback_setflag(BTN_B_RISING_CALLBACK);
 	}
 
 	//BTN B falling interrupt
@@ -53,7 +55,7 @@ void EINT3_IRQHandler()
 	{
 		LPC_GPIOINT->IO0IntClr = (0b1 << BTN_B);
 
-		printf("B falling\n");
+		callback_setflag(BTN_B_FALLING_CALLBACK);
 	}
 
 
@@ -63,7 +65,7 @@ void EINT3_IRQHandler()
 	{
 		LPC_GPIOINT->IO2IntClr = (0b1 << BTN_A);
 
-		printf("A rising\n");
+		callback_setflag(BTN_A_RISING_CALLBACK);
 	}
 
 	//BTN A falling interrupt
@@ -71,7 +73,7 @@ void EINT3_IRQHandler()
 	{
 		LPC_GPIOINT->IO2IntClr = (0b1 << BTN_A);
 
-		printf("A falling\n");
+		callback_setflag(BTN_A_FALLING_CALLBACK);
 	}
 
 }
