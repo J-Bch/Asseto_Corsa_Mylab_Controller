@@ -55,3 +55,8 @@ void callback_do()
 		}
 	}
 }
+
+void callback_reset()
+{
+	callback_count = 0;
+}

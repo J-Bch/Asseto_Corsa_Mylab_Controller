@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "LPC17xx.h"
 #include "dashboard.h"
@@ -39,17 +40,20 @@ bool is_screen_saver_dashboard_displaying = false;
 
 uint32_t internal_message_counter = 0;
 
+
 void dashboard_main()
 {
 	uart_init();
 	lcd_init();
 	can_init();
 
+	callback_reset();
 	callback_add(CAN_IRQn, &can_dashboard_recieve_handler);
 
 	char buffer[sizeof(uart_telemetry)];
 	internal_message_counter = 0;
 
+	gui_reset_values();
 	gui_draw_screen_saver(50, 170, "Dashboard");
 	is_screen_saver_dashboard_displaying = true;
 
@@ -89,6 +93,7 @@ void dashboard_main()
 		if(telem->stop_display)
 		{
 			whipe_screen();
+			gui_reset_values();
 			gui_draw_screen_saver(50, 170, "Dashboard");
 			is_screen_saver_dashboard_displaying = true;
 
@@ -123,8 +128,8 @@ void dashboard_main()
 		}
 
 
-		gui_draw_accel_bar(100, 100, 10, 100, telem->gas);
-		gui_draw_brake_bar(120, 100, 10, 100, telem->brake);
+		gui_draw_accel_bar(190, 120, 10, 120, telem->gas);
+		gui_draw_brake_bar(210, 120, 10, 120, telem->brake);
 		gui_draw_lap_time(0, 50, telem->lap_time);
 
 

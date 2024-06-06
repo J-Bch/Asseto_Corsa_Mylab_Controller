@@ -125,12 +125,12 @@ can_msg last_can_msg;
 DEFINE_CIRCULAR_BUFFER(can_msg, can, CIRCULAR_BUFFER_SIZE);
 can_circular_buffer can_buffer;
 
-uint8_t message_to_read_number = 0;
+uint32_t message_to_read_number = 0;
 
 
 void can_init()
 {
-
+	message_to_read_number = 0;
 	can_circular_buffer_init(&can_buffer);
 	//Power
 	LPC_SC->PCONP |= (0b1 << PCCAN1);
@@ -301,11 +301,19 @@ void can_get_message(uint32_t* recieved_id, uint8_t** recieved_data)
 	*recieved_data = can_buffer.buffer[can_buffer.tail].data;
 	can_buffer.tail = (can_buffer.tail + 1) % CIRCULAR_BUFFER_SIZE;
 	message_to_read_number--;
+
+	if(message_to_read_number > 0)
+		callback_setflag(CAN_IRQn);
 }
 
 uint8_t can_get_message_to_read_number()
 {
 	return message_to_read_number;
+}
+
+void can_reset()
+{
+	message_to_read_number = 0;
 }
 
 
