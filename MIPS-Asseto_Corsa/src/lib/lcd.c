@@ -241,12 +241,12 @@ int get_ms_counter()
 	return ms_counter;
 }
 
-
+//Bresenham’s Line Drawing Algorithm
 void draw_line(int x0, int y0, int x1, int y1, int r, int g, int b)
 {
     int dx = fabs(x1 - x0);
     int dy = fabs(y1 - y0);
-    int sx = x0 < x1 ? 1 : -1;
+    int sx = x0 < x1 ? 1 : -1; //direction of the line
     int sy = y0 < y1 ? 1 : -1;
     int err = (dx > dy ? dx : -dy) / 2;
     int e2;
@@ -256,7 +256,7 @@ void draw_line(int x0, int y0, int x1, int y1, int r, int g, int b)
         draw_square(x0, y0, 1, 1, r, g, b);
 
         e2 = err;
-        if (e2 > -dx)
+        if (e2 > -dx) // if error is too big, increment value (it means we have to put another pixel to reduce error
         {
             err -= dy;
             x0 += sx;

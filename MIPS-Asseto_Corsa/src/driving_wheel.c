@@ -89,7 +89,7 @@ void can_wheel_recieve_handler()
 	else if(received_data[0] == CAN_SPEED_DATA_NUMBER)
 	{
 		uint32_t speed = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
-		gui_draw_speed(10, 0, speed);
+		gui_draw_speed(80, 50, speed);
 
 		gui_draw_speedometer(120, 160, 80, speed);
 	}

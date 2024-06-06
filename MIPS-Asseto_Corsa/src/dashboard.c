@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "LPC17xx.h"
 #include "dashboard.h"
@@ -127,8 +128,8 @@ void dashboard_main()
 		}
 
 
-		gui_draw_accel_bar(100, 100, 10, 100, telem->gas);
-		gui_draw_brake_bar(120, 100, 10, 100, telem->brake);
+		gui_draw_accel_bar(190, 120, 10, 120, telem->gas);
+		gui_draw_brake_bar(210, 120, 10, 120, telem->brake);
 		gui_draw_lap_time(0, 50, telem->lap_time);
 
 
