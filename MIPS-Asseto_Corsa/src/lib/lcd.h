@@ -27,4 +27,5 @@ void put_pixel(int x, int y, int r, int g, int b);
 void set_ms_counter(int value);
 void reset_ms_counter();
 int get_ms_counter();
+void draw_line(int x0, int y0, int x1, int y1, int r, int g, int b);
 #endif /* LCD_H_ */

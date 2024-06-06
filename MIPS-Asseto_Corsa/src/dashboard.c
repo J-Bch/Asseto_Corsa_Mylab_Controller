@@ -39,6 +39,7 @@ bool is_screen_saver_dashboard_displaying = false;
 
 uint32_t internal_message_counter = 0;
 
+
 void dashboard_main()
 {
 	uart_init();
@@ -51,6 +52,7 @@ void dashboard_main()
 	char buffer[sizeof(uart_telemetry)];
 	internal_message_counter = 0;
 
+	gui_reset_values();
 	gui_draw_screen_saver(50, 170, "Dashboard");
 	is_screen_saver_dashboard_displaying = true;
 
@@ -90,6 +92,7 @@ void dashboard_main()
 		if(telem->stop_display)
 		{
 			whipe_screen();
+			gui_reset_values();
 			gui_draw_screen_saver(50, 170, "Dashboard");
 			is_screen_saver_dashboard_displaying = true;
 

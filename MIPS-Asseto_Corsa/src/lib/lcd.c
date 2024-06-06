@@ -5,6 +5,7 @@
  *      Author: joachim
  */
 
+#include <math.h>
 
 #include "ssp.h"
 #include "lcd.h"
@@ -238,6 +239,34 @@ void reset_ms_counter()
 int get_ms_counter()
 {
 	return ms_counter;
+}
+
+
+void draw_line(int x0, int y0, int x1, int y1, int r, int g, int b)
+{
+    int dx = fabs(x1 - x0);
+    int dy = fabs(y1 - y0);
+    int sx = x0 < x1 ? 1 : -1;
+    int sy = y0 < y1 ? 1 : -1;
+    int err = (dx > dy ? dx : -dy) / 2;
+    int e2;
+
+    while(x0 != x1 || y0 != y1)
+    {
+        draw_square(x0, y0, 1, 1, r, g, b);
+
+        e2 = err;
+        if (e2 > -dx)
+        {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dy)
+        {
+            err += dx;
+            y0 += sy;
+        }
+    }
 }
 
 

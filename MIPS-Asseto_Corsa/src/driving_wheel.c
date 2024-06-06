@@ -51,6 +51,7 @@ void driving_wheel_main()
 //	int16_t accelerometer_can_values[3];
 //	uint8_t accelerometer_can_values_splitted[6];
 
+	gui_reset_values();
 	gui_draw_screen_saver(50, 170, "Driving Wheel");
 	is_screen_saver_wheel_displaying = true;
 
@@ -80,6 +81,7 @@ void can_wheel_recieve_handler()
 	if(received_data[0] == CAN_RESET_CMD_NUMBER)
 	{
 		whipe_screen();
+		gui_reset_values();
 		gui_draw_screen_saver(50, 170, "Driving Wheel");
 		is_screen_saver_wheel_displaying = true;
 		return;
@@ -88,6 +90,8 @@ void can_wheel_recieve_handler()
 	{
 		uint32_t speed = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
 		gui_draw_speed(10, 0, speed);
+
+		gui_draw_speedometer(120, 160, 80, speed);
 	}
 
 //
