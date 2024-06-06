@@ -154,6 +154,11 @@ void gui_draw_speedometer(int x, int y, int radius, int speed)
 
 		write_text_small_font("100", 31, 0, 0, 0, 0, 0, x - 1.5*SMALL_FONT_WIDTH, (y - radius) - 10 , 240);
 		write_text_small_font("300", 31, 0, 0, 0, 0, 0, x - 1.5*SMALL_FONT_WIDTH, (y + radius) + 10, 240);
+
+		write_text_small_font("50", 31, 0, 0, 0, 0, 0, (x - (float)radius*0.707) - SMALL_FONT_WIDTH, (y - (float)radius*0.707) -12, 240);
+		write_text_small_font("150", 31, 0, 0, 0, 0, 0, (x + (float)radius*0.707) + SMALL_FONT_WIDTH, (y - (float)radius*0.707) -12, 240);
+		write_text_small_font("250", 31, 0, 0, 0, 0, 0, (x + (float)radius*0.707) +SMALL_FONT_WIDTH, (y + (float)radius*0.707) +12, 240);
+		write_text_small_font("350", 31, 0, 0, 0, 0, 0, (x - (float)radius*0.707) -SMALL_FONT_WIDTH, (y + (float)radius*0.707) +12, 240);
 	}
 
 	int x_end;
