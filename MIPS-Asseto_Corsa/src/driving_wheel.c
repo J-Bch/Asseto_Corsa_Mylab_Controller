@@ -43,8 +43,8 @@ void driving_wheel_main()
 	callback_add(CAN_IRQn, &can_wheel_recieve_handler);
 	callback_add(BTN_A_RISING_CALLBACK, &btn_a_rising_handler);
 	callback_add(BTN_B_RISING_CALLBACK, &btn_b_rising_handler);
-	callback_add(BTN_A_RISING_CALLBACK, &btn_a_falling_handler);
-	callback_add(BTN_B_RISING_CALLBACK, &btn_b_falling_handler);
+	callback_add(BTN_A_FALLING_CALLBACK, &btn_a_falling_handler);
+	callback_add(BTN_B_FALLING_CALLBACK, &btn_b_falling_handler);
 
 	float accelerometer_values_real_world[3];
 //	int16_t accelerometer_can_values[3];
@@ -71,7 +71,6 @@ void can_wheel_recieve_handler()
 	}
 
 
-
 	uint32_t received_id;
 	uint8_t* received_data;
 
@@ -96,20 +95,32 @@ void can_wheel_recieve_handler()
 
 void btn_a_rising_handler()
 {
-	printf("A rising\n");
+	uint8_t data[8] = { 0 };
+	data[0] = CAN_BTN_A_DATA_NUMBER;
+	data[1] = 1;
+	can_send(0, 0, 2, data);
 }
 
 void btn_b_rising_handler()
 {
-	printf("B rising\n");
+	uint8_t data[8] = { 0 };
+	data[0] = CAN_BTN_B_DATA_NUMBER;
+	data[1] = 1;
+	can_send(0, 0, 2, data);
 }
 
 void btn_a_falling_handler()
 {
-	printf("A falling\n");
+	uint8_t data[8] = { 0 };
+	data[0] = CAN_BTN_A_DATA_NUMBER;
+	data[1] = 0;
+	can_send(0, 0, 2, data);
 }
 
 void btn_b_falling_handler()
 {
-	printf("B falling\n");
+	uint8_t data[8] = { 0 };
+	data[0] = CAN_BTN_B_DATA_NUMBER;
+	data[1] = 0;
+	can_send(0, 0, 2, data);
 }

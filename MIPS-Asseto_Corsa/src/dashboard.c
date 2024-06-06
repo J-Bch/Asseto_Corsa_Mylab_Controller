@@ -142,13 +142,35 @@ void dashboard_main()
 
 		internal_message_counter++;
 
+		callback_do();
+
 
 	}
 }
 
 void can_dashboard_recieve_handler()
 {
+	uint32_t received_id;
+	uint8_t* received_data;
 
+	can_get_message(&received_id, &received_data);
+
+	if(received_data[0] == CAN_BTN_A_DATA_NUMBER)
+	{
+		if(received_data[1] == 1)
+			draw_square(0, 280, 8*sizeof("A pressed"), 12, 0, 0, 0);
+		else if(received_data[1] == 0)
+			write_text_small_font("A pressed", 31, 0, 0, 0, 0, 0, 0, 280, 240);
+
+	}
+	else if(received_data[0] == CAN_BTN_B_DATA_NUMBER)
+	{
+		if(received_data[1] == 1)
+			draw_square(0, 300, 8*sizeof("B pressed"), 12, 0, 0, 0);
+		else if(received_data[1] == 0)
+			write_text_small_font("B pressed", 31, 0, 0, 0, 0, 0, 0, 300, 240);
+
+	}
 }
 
 void dashboard_reset_uart_communication()

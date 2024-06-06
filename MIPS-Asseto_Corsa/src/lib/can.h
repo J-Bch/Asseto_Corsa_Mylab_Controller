@@ -11,6 +11,8 @@
 
 #define CAN_RESET_CMD_NUMBER 0
 #define CAN_SPEED_DATA_NUMBER 1
+#define CAN_BTN_A_DATA_NUMBER 2
+#define CAN_BTN_B_DATA_NUMBER 3
 
 void can_init();
 void can_send(uint32_t id, uint8_t ext_id, uint8_t data_len, uint8_t data[data_len]);
