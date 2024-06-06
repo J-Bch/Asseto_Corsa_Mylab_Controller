@@ -12,5 +12,7 @@ void gui_draw_accel_bar(int x, int y, int size_x, int size_y, float value);
 void gui_draw_brake_bar(int x, int y, int size_x, int size_y, float value);
 void gui_draw_lap_time(int x, int y, int value);
 void gui_draw_speed(int x, int y, int value);
+void gui_draw_screen_saver(int x, int y, char* text);
+void gui_clear_screen_saver(int x, int y, char* text);
 
 #endif /* LIB_CUSTOM_GUI_H_ */

@@ -21,6 +21,7 @@ void can_dashboard_recieve_handler();
 
 typedef struct __attribute__ ((__packed__)) _uart_telemetry
 {
+	bool stop_display;
 	float speed_kmh;
 	uint32_t lap_time;
 	float wheel_angular_speed_0;
@@ -33,6 +34,8 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 
 bool abs_text_whiped = false;
 bool tc_text_whiped = false;
+
+bool is_screen_saver_dashboard_displaying = false;
 
 uint32_t internal_message_counter = 0;
 
@@ -47,12 +50,22 @@ void dashboard_main()
 	char buffer[sizeof(uart_telemetry)];
 	internal_message_counter = 0;
 
+	gui_draw_screen_saver(50, 170, "Dashboard");
+	is_screen_saver_dashboard_displaying = true;
+
 	while(1)
 	{
 		for(int i = 0; i < sizeof(uart_telemetry); i++)
 		{
 			buffer[i] = uart_get_char();
 		}
+
+		if(is_screen_saver_dashboard_displaying)
+		{
+			gui_clear_screen_saver(50, 170, "Dashboard");
+			is_screen_saver_dashboard_displaying = false;
+		}
+
 
 		uart_telemetry* telem = (uart_telemetry*)buffer;
 
@@ -65,11 +78,24 @@ void dashboard_main()
 //		printf("Received message counter : %i\n", telem->message_counter);
 //		printf("Internal message counter : %i\n", internal_message_counter);
 
+
 		if(internal_message_counter != telem->message_counter)
 		{
 //			printf("Counter missmatch, resseting comm\n");
 			dashboard_reset_uart_communication();
 			return;
+		}
+
+		if(telem->stop_display)
+		{
+			whipe_screen();
+			gui_draw_screen_saver(50, 170, "Dashboard");
+			is_screen_saver_dashboard_displaying = true;
+
+			uint8_t data[8] = { 0 };
+			data[0] = CAN_RESET_CMD_NUMBER;
+			can_send(0, 0, 1, data);
+			continue;
 		}
 
 		if(telem->is_abs_enabled)
@@ -105,11 +131,12 @@ void dashboard_main()
 
 		uint8_t data[8] = { 0 };
 		uint32_t speed_adjusted = (uint32_t)telem->speed_kmh;
-		data[0] = (speed_adjusted & 0xFF);
-		data[1] = ((speed_adjusted >> 8) & 0xFF);
-		data[2] = ((speed_adjusted >> 16) & 0xFF);
-		data[3] = ((speed_adjusted >> 24) & 0xFF);
-		can_send(0, 0, 4, data);
+		data[0] = CAN_SPEED_DATA_NUMBER;
+		data[1] = (speed_adjusted & 0xFF);
+		data[2] = ((speed_adjusted >> 8) & 0xFF);
+		data[3] = ((speed_adjusted >> 16) & 0xFF);
+		data[4] = ((speed_adjusted >> 24) & 0xFF);
+		can_send(0, 0, 5, data);
 
 //		printf("\n");
 

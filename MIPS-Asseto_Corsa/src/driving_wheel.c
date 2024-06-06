@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "LPC17xx.h"
 #include "driving_wheel.h"
@@ -27,12 +28,14 @@ void btn_b_rising_handler();
 void btn_a_falling_handler();
 void btn_b_falling_handler();
 
+bool is_screen_saver_wheel_displaying = false;
+
 void driving_wheel_main()
 {
+	btns_init();
 	lcd_init();
 	can_init();
 	i2c_init();
-	btns_init();
 	delay(100); //wait for the accelerometer to boot
 	accelerometer_init();
 	accelerometer_config();
@@ -47,6 +50,9 @@ void driving_wheel_main()
 //	int16_t accelerometer_can_values[3];
 //	uint8_t accelerometer_can_values_splitted[6];
 
+	gui_draw_screen_saver(50, 170, "Driving Wheel");
+	is_screen_saver_wheel_displaying = true;
+
 	while(1)
 	{
 		callback_do();
@@ -58,13 +64,31 @@ void driving_wheel_main()
 
 void can_wheel_recieve_handler()
 {
+	if(is_screen_saver_wheel_displaying)
+	{
+		gui_clear_screen_saver(50, 170, "Driving Wheel");
+		is_screen_saver_wheel_displaying = false;
+	}
+
+
+
 	uint32_t received_id;
 	uint8_t* received_data;
 
 	can_get_message(&received_id, &received_data);
 
-	uint32_t speed = (received_data[0] + (received_data[1] << 8) + (received_data[2] << 16) + (received_data[3] << 24));
-	gui_draw_speed(10, 0, speed);
+	if(received_data[0] == CAN_RESET_CMD_NUMBER)
+	{
+		whipe_screen();
+		gui_draw_screen_saver(50, 170, "Driving Wheel");
+		is_screen_saver_wheel_displaying = true;
+		return;
+	}
+	else if(received_data[0] == CAN_SPEED_DATA_NUMBER)
+	{
+		uint32_t speed = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
+		gui_draw_speed(10, 0, speed);
+	}
 
 //
 //	printf("%f\n", speed_adjusted);

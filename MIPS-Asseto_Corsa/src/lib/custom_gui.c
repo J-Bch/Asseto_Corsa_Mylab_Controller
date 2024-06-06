@@ -9,11 +9,13 @@
 
 #include <stdlib.h>
 #include "lcd.h"
+#include <string.h>
 
 int previous_accel_bar_height = 0;
 int previous_brake_bar_height = 0;
 int previous_lap_time = 0;
 int previous_speed = 0;
+
 
 void gui_draw_accel_bar(int x, int y, int size_x, int size_y, float value)
 {
@@ -72,6 +74,17 @@ void gui_draw_speed(int x, int y, int value)
 	itoa(value, text, 10);
 	write_text_small_font(text, 31, 0, 0, 0, 0, 0, x, y, 240);
 	previous_speed = value;
+}
+
+
+void gui_draw_screen_saver(int x, int y, char* text)
+{
+	write_text_small_font(text, 31, 0, 0, 0, 0, 0, x, y, 240);
+}
+
+void gui_clear_screen_saver(int x, int y, char* text)
+{
+	draw_square(x, y, strlen(text)*8, 12, 0, 0, 0);
 }
 
 

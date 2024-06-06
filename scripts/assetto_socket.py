@@ -27,12 +27,26 @@ def socket_send(msg):
 
 
 def socket_callback(callback: any):
+    global message_counter
     while(1):
         try:
             data_raw, addr = sock.recvfrom(1024)
             callback(data_raw, addr)
         except socket.timeout: 
             print("Socket callback receive timeout, restarting communication")
+
+            # this is done so the dashboard can send a reset screen cmd to the driving wheel, INCLUDE ALL THE SAME NUMBER OF DATA OR WILL CAUSE A RESTART
+            uart.serial_send(struct.pack("?", True))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("I", 0))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("?", False))
+            uart.serial_send(struct.pack("?", False))
+
+            uart.serial_send(struct.pack("I", message_counter))
+            message_counter += 1
 
             metadata = handshake()
             uart.init_serial()
@@ -88,6 +102,7 @@ def receive_n_send(data_raw, _):
     if(duration.microseconds > MESSAGE_SENT_WAIT_MICROSECONDS):
         last_time_sent = datetime.now()
         print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
+        uart.serial_send(struct.pack("?", False)) #reset screen bool
         uart.serial_send(struct.pack("f", live_data['speed_Kmh']))
         uart.serial_send(struct.pack("I", live_data['lapTime']))
         uart.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
