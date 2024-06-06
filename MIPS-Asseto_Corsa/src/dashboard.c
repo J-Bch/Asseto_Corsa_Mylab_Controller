@@ -45,6 +45,7 @@ void dashboard_main()
 	lcd_init();
 	can_init();
 
+	callback_reset();
 	callback_add(CAN_IRQn, &can_dashboard_recieve_handler);
 
 	char buffer[sizeof(uart_telemetry)];

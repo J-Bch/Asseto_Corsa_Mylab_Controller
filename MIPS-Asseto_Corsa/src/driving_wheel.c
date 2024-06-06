@@ -40,6 +40,7 @@ void driving_wheel_main()
 	accelerometer_init();
 	accelerometer_config();
 
+	callback_reset();
 	callback_add(CAN_IRQn, &can_wheel_recieve_handler);
 	callback_add(BTN_A_RISING_CALLBACK, &btn_a_rising_handler);
 	callback_add(BTN_B_RISING_CALLBACK, &btn_b_rising_handler);

@@ -13,5 +13,6 @@
 void callback_add(uint32_t callback_id, void(handler(void)));
 void callback_setflag(uint32_t callback_id);
 void callback_do();
+void callback_reset();
 
 #endif /* CALLBACK_H_ */
