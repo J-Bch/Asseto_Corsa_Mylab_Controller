@@ -7,6 +7,7 @@
 
 #include "uart.h"
 #include "LPC17xx.h"
+#include "circular_buffer.h"
 #include <stdio.h>
 
 #define PCUART0 3
@@ -37,15 +38,16 @@
 #define ABEOINTEN 8
 #define ABTOINTEN 9
 
-#define BUFFER_SIZE 256
+DEFINE_CIRCULAR_BUFFER(int, int, 256);
 
-char circular_buffer[BUFFER_SIZE];
-int head = 0;
-int tail = 0;
+int_circular_buffer uart_buffer;
 
 
 void uart_init()
 {
+
+	int_circular_buffer_init(&uart_buffer);
+
 	//Power
 	LPC_SC->PCONP |= (0b1 << PCUART0);
 
@@ -118,25 +120,22 @@ void uart_send(char *value, uint8_t size)
 
 char uart_get_char()
 {
-	while(tail == head); //wait if no char has been received
+	while(uart_buffer.head == uart_buffer.tail);//wait if no char has been received
 
 	NVIC_DisableIRQ(UART0_IRQn);
-	char c = circular_buffer[tail];
-	tail = (tail + 1) % BUFFER_SIZE;
+	char c = int_circular_buffer_get(&uart_buffer);
 	NVIC_EnableIRQ(UART0_IRQn);
 	return c;
 }
 
 void put_char(char c)
 {
-	circular_buffer[head] = c;
-	head = (head + 1) % BUFFER_SIZE;
+	int_circular_buffer_put(&uart_buffer, c);
 }
 
-void clear()
+void uart_clear()
 {
-	tail = 0;
-	head = 0;
+	int_circular_buffer_clear(&uart_buffer);
 }
 
 

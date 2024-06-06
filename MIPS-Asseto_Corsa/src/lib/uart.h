@@ -16,7 +16,7 @@ void uart_recieve();
 void put_char(char c);
 char uart_get_char();
 int count();
-void clear();
+void uart_clear();
 
 
 

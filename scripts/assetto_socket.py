@@ -1,6 +1,6 @@
 import socket
 import unpack_struct
-import uart_send
+import uart
 import struct
 import time
 from datetime import datetime
@@ -12,8 +12,10 @@ from datetime import datetime
 
 UDP_IP = "127.0.0.1"
 UDP_PORT = 9996
+SOCKET_TIMEOUT = 5
+MESSAGE_SENT_WAIT_MICROSECONDS = 100000
 last_time_sent = datetime.now()
-
+message_counter = 0
     
 #############
 # Function
@@ -23,18 +25,52 @@ last_time_sent = datetime.now()
 def socket_send(msg):
     sock.sendto(msg, (UDP_IP, UDP_PORT))
 
+
 def socket_callback(callback: any):
+    global message_counter
     while(1):
-        data_raw, addr = sock.recvfrom(1024)
-        callback(data_raw, addr)
+        try:
+            data_raw, addr = sock.recvfrom(1024)
+            callback(data_raw, addr)
+        except socket.timeout: 
+            print("Socket callback receive timeout, restarting communication")
+
+            # this is done so the dashboard can send a reset screen cmd to the driving wheel, INCLUDE ALL THE SAME NUMBER OF DATA OR WILL CAUSE A RESTART
+            uart.serial_send(struct.pack("?", True))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("I", 0))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("?", False))
+            uart.serial_send(struct.pack("?", False))
+
+            uart.serial_send(struct.pack("I", message_counter))
+            message_counter += 1
+
+            metadata = handshake()
+            uart.init_serial()
+            
 
 ## Logic
 
 def handshake():
-    # first handshake
-    socket_send(bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'))
+
+    global message_counter
+    message_counter = 0
     
-    data_raw, _ = sock.recvfrom(408)
+    data_raw = []
+
+    recieved = False
+    while(recieved == False):
+        # first handshake
+        socket_send(bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'))
+
+        try:
+            data_raw, _ = sock.recvfrom(408)
+            recieved = True
+        except socket.timeout:
+            print("Socket handshake receive timeout, retrying")
 
     data_dict = {
         "car_name": data_raw[0:50:2],
@@ -52,16 +88,32 @@ def handshake():
 
 def receive_n_send(data_raw, _):
     global last_time_sent
+    global message_counter
+
+    if(uart.serial_get_nonblock() == b'RESET'):
+        print("Reset recieved, resetting")
+        metadata = handshake()
+        uart.init_serial()
+        return
+
+    last_time_udp_recieved = datetime.now()
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
     duration = datetime.now() - last_time_sent
-    if(duration.microseconds > 900000):
+    if(duration.microseconds > MESSAGE_SENT_WAIT_MICROSECONDS):
         last_time_sent = datetime.now()
         print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
-        uart_send.serial_send(struct.pack("f", live_data['speed_Kmh']))
-        uart_send.serial_send(struct.pack("I", live_data['lapTime']))
-        uart_send.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
-        uart_send.serial_send(struct.pack("f", live_data['gas']))
-        uart_send.serial_send(struct.pack("?", live_data['isAbsEnabled']))
+        uart.serial_send(struct.pack("?", False)) #reset screen bool
+        uart.serial_send(struct.pack("f", live_data['speed_Kmh']))
+        uart.serial_send(struct.pack("I", live_data['lapTime']))
+        uart.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
+        uart.serial_send(struct.pack("f", live_data['gas']))
+        uart.serial_send(struct.pack("f", live_data['brake']))
+        uart.serial_send(struct.pack("?", live_data['isAbsEnabled']))
+        uart.serial_send(struct.pack("?", live_data['isTcEnabled']))
+
+        uart.serial_send(struct.pack("I", message_counter))
+        
+        message_counter += 1
 
     
 
@@ -74,13 +126,15 @@ print("UDP target port: %s" % UDP_PORT)
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
 
+sock.settimeout(SOCKET_TIMEOUT)
+
 print("Listening...")
 
 metadata = handshake()
 
-uart_send.init_serial()   
+uart.init_serial()   
 
-socket_callback(receive_n_send)
+socket_callback(receive_n_send) 
  
 
 

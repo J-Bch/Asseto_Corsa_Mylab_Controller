@@ -18,61 +18,28 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "lib/uart.h"
-#include "lib/lcd.h"
-
 #include <stdio.h>
 
-typedef struct __attribute__ ((__packed__)) _uart_telemetry
-{
-	float speed_kmh;
-	uint32_t lap_time;
-	float wheel_angular_speed_0;
-	float gas;
-	bool is_abs_enabled;
-}uart_telemetry;
+#include "dashboard.h"
+#include "driving_wheel.h"
+#include "lib/uart.h"
+#include "lib/lcd.h"
+#include "lib/can.h"
 
-bool screen_whiped = false;
+
 
 int main(void)
 {
-	uart_init();
-	lcd_init();
+	LPC_GPIO2->FIODIR &= ~(1); //dip switch 0 to input
 
-	screen_whiped = true;
-
-	char buffer[sizeof(uart_telemetry)];
-
-	while(1)
+	if((LPC_GPIO2->FIOPIN & 0b1) == 0)
 	{
-		for(int i = 0; i < sizeof(uart_telemetry); i++)
-		{
-			buffer[i] = uart_get_char();
-		}
-
-		uart_telemetry* telem = (uart_telemetry*)buffer;
-
-		printf("Speed : %f\n", telem->speed_kmh);
-		printf("Lap time : %i\n", telem->lap_time);
-		printf("Wheel 0 angular :%f\n", telem->wheel_angular_speed_0);
-		printf("gas : %f\n", telem->gas);
-		printf("Abs enabled ? : %i\n", telem->is_abs_enabled);
-
-		if(telem->is_abs_enabled)
-		{
-			write_text_small_font("Abs enabled", 31, 0, 0, 0, 0, 0, 0, 0, 240);
-
-			screen_whiped = false;
-		}
-		else if (!screen_whiped)
-		{
-			whipe_screen();
-			screen_whiped = true;
-		}
-
-		printf("\n");
-
-
+		dashboard_main();
 	}
-    return 0 ;
+	else
+	{
+		driving_wheel_main();
+	}
+
+    return 0;
 }
