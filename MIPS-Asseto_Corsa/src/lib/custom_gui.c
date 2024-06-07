@@ -118,7 +118,7 @@ void gui_draw_speed(int x, int y, int value)
 	if(first_draw_speed)
 	{
 		first_draw_speed = false;
-		write_text_small_font("SPEED :", 31, 0, 0, 0, 0, 0, x, y, 240);
+		write_text_small_font("SPEED :", 31, 63, 31, 0, 0, 0, x, y, 240);
 	}
 
 	if(value < previous_speed) //erase the previous counter if value changed number of digits
@@ -126,7 +126,7 @@ void gui_draw_speed(int x, int y, int value)
 
 	char text[6] = {0};
 	itoa(value, text, 10);
-	write_text_small_font(text, 31, 0, 0, 0, 0, 0, 8*SMALL_FONT_WIDTH+x, y, 240);
+	write_text_small_font(text, 31, 63, 31, 0, 0, 0, 8*SMALL_FONT_WIDTH+x, y, 240);
 	previous_speed = value;
 }
 
@@ -151,32 +151,37 @@ void calculate_end_point(int x, int y, int radius, int max_v, int v, int *x_end,
 
 void gui_draw_speedometer(int x, int y, int radius, int speed)
 {
-	if(first_draw_speedo)
-	{
-		first_draw_speedo = false;
-
-		write_text_small_font("0", 31, 0, 0, 0, 0, 0, (x - radius) - 5, y - 5 , 240);
-		write_text_small_font("200", 31, 0, 0, 0, 0, 0, (x + radius) + 5, y -5 , 240);
-
-		write_text_small_font("100", 31, 0, 0, 0, 0, 0, x - 1.5*SMALL_FONT_WIDTH, (y - radius) - 10 , 240);
-		write_text_small_font("300", 31, 0, 0, 0, 0, 0, x - 1.5*SMALL_FONT_WIDTH, (y + radius) + 10, 240);
-
-		write_text_small_font("50", 31, 0, 0, 0, 0, 0, (x - (float)radius*0.707) - SMALL_FONT_WIDTH, (y - (float)radius*0.707) -12, 240);
-		write_text_small_font("150", 31, 0, 0, 0, 0, 0, (x + (float)radius*0.707) + SMALL_FONT_WIDTH, (y - (float)radius*0.707) -12, 240);
-		write_text_small_font("250", 31, 0, 0, 0, 0, 0, (x + (float)radius*0.707) +SMALL_FONT_WIDTH, (y + (float)radius*0.707) +12, 240);
-		write_text_small_font("350", 31, 0, 0, 0, 0, 0, (x - (float)radius*0.707) -SMALL_FONT_WIDTH, (y + (float)radius*0.707) +12, 240);
-	}
-
 	int x_end;
 	int y_end;
 
 	draw_line(x, y, previous_x_end_speedo, previous_y_end_speedo, 0, 0, 0);
 
 	calculate_end_point(x, y, radius, 200, speed, &x_end, &y_end);
-    draw_line(x, y, (int)x_end, (int)y_end, 0, 0, 31);
+    draw_line(x, y, (int)x_end, (int)y_end, 31, 63, 31);
 
     previous_x_end_speedo = x_end;
     previous_y_end_speedo = y_end;
+
+    if(first_draw_speedo)
+	{
+		first_draw_speedo = false;
+
+		write_text_small_font("0", 31, 63, 31, 0, 0, 0, (x - radius) - 2*SMALL_FONT_WIDTH, y - (SMALL_FONT_HEIGHT / 2), 240);
+		write_text_small_font("200", 31, 63, 31, 0, 0, 0, (x + radius) + SMALL_FONT_WIDTH, y - (SMALL_FONT_HEIGHT / 2), 240);
+
+		write_text_small_font("100", 31, 63, 31, 0, 0, 0, x - (1.5*SMALL_FONT_WIDTH), (y - radius) - 1.5*SMALL_FONT_HEIGHT , 240);
+		write_text_small_font("300", 31, 63, 31, 0, 0, 0, x - (1.5*SMALL_FONT_WIDTH), (y + radius) + SMALL_FONT_HEIGHT, 240);
+
+		write_text_small_font("50", 31, 0, 0, 0, 0, 0, (x - (float)radius*0.707) - 2.5*SMALL_FONT_WIDTH, (y - (float)radius*0.707) -SMALL_FONT_HEIGHT, 240);
+		write_text_small_font("150", 31, 0, 0, 0, 0, 0, (x + (float)radius*0.707) + 1.5*SMALL_FONT_WIDTH, (y - (float)radius*0.707) -SMALL_FONT_HEIGHT, 240);
+
+		write_text_small_font("250", 31, 0, 0, 0, 0, 0, (x + (float)radius*0.707) + 1.5*SMALL_FONT_WIDTH, (y + (float)radius*0.707), 240);
+		write_text_small_font("350", 31, 0, 0, 0, 0, 0, (x - (float)radius*0.707) -4*SMALL_FONT_WIDTH, (y + (float)radius*0.707), 240);
+
+		int circle_radius = radius + 5;
+		draw_circle(10, 0, 0, x, y, circle_radius, x-circle_radius, y-circle_radius, 2*circle_radius +1, 2*circle_radius+1);
+
+	}
 }
 
 void gui_display_shift_indicator_leds(int engine_RPM, int max_engine_RPM)
