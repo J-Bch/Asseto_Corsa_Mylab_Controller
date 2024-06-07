@@ -28,4 +28,5 @@ void set_ms_counter(int value);
 void reset_ms_counter();
 int get_ms_counter();
 void draw_line(int x0, int y0, int x1, int y1, int r, int g, int b);
+void draw_circle(uint16_t r, uint16_t g, uint16_t b , uint16_t ref_x, uint16_t ref_y, uint16_t radius, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 #endif /* LCD_H_ */

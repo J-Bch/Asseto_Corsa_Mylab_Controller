@@ -269,6 +269,25 @@ void draw_line(int x0, int y0, int x1, int y1, int r, int g, int b)
     }
 }
 
+void draw_circle(uint16_t r, uint16_t g, uint16_t b , uint16_t ref_x, uint16_t ref_y, uint16_t radius, uint16_t x, uint16_t y, uint16_t w, uint16_t h){
+
+	for (int u = 0; u < w; ++u) {
+		for (int v = 0; v < h; ++v) {
+
+			int _u = u + x - ref_x;
+			int _v = v + y - ref_y;
+
+			uint16_t dist = (uint16_t)sqrt(_u * _u + _v * _v);
+
+			if(dist < (radius + CIRCLE_THRESHOLD) && dist > (radius - CIRCLE_THRESHOLD)){
+				put_pixel(x + u, y + v, r, g, b);
+			}
+		}
+	}
+
+}
+
+
 
 
 
