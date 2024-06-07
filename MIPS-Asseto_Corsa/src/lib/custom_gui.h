@@ -16,5 +16,6 @@ void gui_draw_speed(int x, int y, int value);
 void gui_draw_screen_saver(int x, int y, char* text);
 void gui_clear_screen_saver(int x, int y, char* text);
 void gui_draw_speedometer(int x, int y, int radius, int speed);
+void gui_display_shift_indicator_leds(int engine_RPM, int max_engine_RPM);
 
 #endif /* LIB_CUSTOM_GUI_H_ */

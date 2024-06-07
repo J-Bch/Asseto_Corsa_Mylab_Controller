@@ -13,6 +13,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include "fonts.h"
+#include "LPC17xx.h"
 
 int previous_accel_bar_height = 0;
 int previous_brake_bar_height = 0;
@@ -21,11 +22,13 @@ int previous_speed = 0;
 
 int previous_x_end_speedo = 0;
 int previous_y_end_speedo = 0;
+int previous_RPM_value = 0;
 
 bool first_draw_speedo = true;
 bool first_draw_lap_time = true;
 bool first_draw_accel_bar = true;
 bool first_draw_speed = true;
+bool first_display_leds = true;
 
 void gui_reset_values()
 {
@@ -36,10 +39,13 @@ void gui_reset_values()
 
 	previous_x_end_speedo = 0;
 	previous_y_end_speedo = 0;
+
+	previous_RPM_value = 0;
 	first_draw_speedo = true;
 	first_draw_lap_time = true;
 	first_draw_accel_bar = true;
 	first_draw_speed = true;
+	first_display_leds = true;
 }
 
 void gui_draw_accel_bar(int x, int y, int size_x, int size_y, float value)
@@ -171,6 +177,29 @@ void gui_draw_speedometer(int x, int y, int radius, int speed)
 
     previous_x_end_speedo = x_end;
     previous_y_end_speedo = y_end;
+}
+
+void gui_display_shift_indicator_leds(int engine_RPM, int max_engine_RPM)
+{
+	if(first_display_leds)
+	{
+		first_display_leds = false;
+
+		LPC_GPIO2->FIODIR |= (0b11111111); //Set all leds to outputs
+		LPC_GPIO2->FIOPIN &= ~(0b11111111); //Turn off all leds
+	}
+
+	float ratio = (float)engine_RPM / (max_engine_RPM -500); //-500 to display last led, even if not on the max rpm
+
+	int value = ratio*7;
+
+	//TODO add mask
+
+	LPC_GPIO2->FIOPIN0 = ((0b1 << (value +1)) -1); //Turn ON all leds
+
+
+	previous_RPM_value = value;
+
 }
 
 
