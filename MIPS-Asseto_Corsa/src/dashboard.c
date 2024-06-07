@@ -28,6 +28,7 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	float wheel_angular_speed_0;
 	float gas;
 	float brake;
+	uint32_t engine_RPM;
 	bool is_abs_enabled;
 	bool is_tc_enabled;
 	uint32_t message_counter;
@@ -134,6 +135,7 @@ void dashboard_main()
 
 
 
+		//Send speed
 		uint8_t data[8] = { 0 };
 		uint32_t speed_adjusted = (uint32_t)telem->speed_kmh;
 		data[0] = CAN_SPEED_DATA_NUMBER;
@@ -141,6 +143,15 @@ void dashboard_main()
 		data[2] = ((speed_adjusted >> 8) & 0xFF);
 		data[3] = ((speed_adjusted >> 16) & 0xFF);
 		data[4] = ((speed_adjusted >> 24) & 0xFF);
+		can_send(0, 0, 5, data);
+
+
+		//Send engine RPM
+		data[0] = CAN_RPM_DATA_NUMBER;
+		data[1] = (telem->engine_RPM & 0xFF);
+		data[2] = ((telem->engine_RPM  >> 8) & 0xFF);
+		data[3] = ((telem->engine_RPM  >> 16) & 0xFF);
+		data[4] = ((telem->engine_RPM  >> 24) & 0xFF);
 		can_send(0, 0, 5, data);
 
 //		printf("\n");
@@ -182,5 +193,10 @@ void dashboard_reset_uart_communication()
 {
 	uart_clear();
 	uart_send("RESET", 5);
+
+	//Send reset screen to the wheel
+	uint8_t data[8] = { 0 };
+	data[0] = CAN_RESET_CMD_NUMBER;
+	can_send(0, 0, 1, data);
 	dashboard_main();
 }

@@ -21,6 +21,9 @@
 #include "lib/buttons.h"
 
 
+#define CAR_MAX_RPM 18000
+
+
 
 void can_wheel_recieve_handler();
 void btn_a_rising_handler();
@@ -92,6 +95,12 @@ void can_wheel_recieve_handler()
 		gui_draw_speed(80, 50, speed);
 
 		gui_draw_speedometer(120, 160, 80, speed);
+	}
+	else if(received_data[0] == CAN_RPM_DATA_NUMBER)
+	{
+		uint32_t engine_RPM = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
+
+		gui_display_shift_indicator_leds(engine_RPM, CAR_MAX_RPM);
 	}
 
 //
