@@ -32,6 +32,8 @@ int main(void)
 {
 	LPC_GPIO2->FIODIR &= ~(1); //dip switch 0 to input
 
+//	usb_init();
+
 	if((LPC_GPIO2->FIOPIN & 0b1) == 0)
 	{
 		dashboard_main();
