@@ -57,9 +57,9 @@ void gui_draw_accel_bar(int x, int y, int size_x, int size_y, float value)
 	{
 		first_draw_accel_bar = false;
 
-		write_text_small_font("0", 31, 0, 0, 0, 0, 0, x-SMALL_FONT_WIDTH, y - SMALL_FONT_HEIGHT, 240);
-		write_text_small_font("50", 31, 0, 0, 0, 0, 0, x-2*SMALL_FONT_WIDTH, y- (size_y/2), 240);
-		write_text_small_font("100", 31, 0, 0, 0, 0, 0, x-3*SMALL_FONT_WIDTH, y- size_y, 240);
+		write_text_small_font("0", 31, 63, 31, 0, 0, 0, x-SMALL_FONT_WIDTH, y - SMALL_FONT_HEIGHT, 240);
+		write_text_small_font("50", 31, 63, 31, 0, 0, 0, x-2*SMALL_FONT_WIDTH, y- (size_y/2)- (SMALL_FONT_HEIGHT/2), 240);
+		write_text_small_font("100", 31, 63, 31, 0, 0, 0, x-3*SMALL_FONT_WIDTH, y- size_y, 240);
 	}
 
 	if(previous_accel_bar_height > height)
@@ -68,7 +68,7 @@ void gui_draw_accel_bar(int x, int y, int size_x, int size_y, float value)
 	}
 	else
 	{
-		draw_square(x, y - height, size_x, height - previous_accel_bar_height, 31, 0, 0);
+		draw_square(x, y - height, size_x, height - previous_accel_bar_height, 0, 63, 0);
 	}
 
 
@@ -85,7 +85,7 @@ void gui_draw_brake_bar(int x, int y, int size_x, int size_y, float value)
 	}
 	else
 	{
-		draw_square(x, y - height, size_x, height - previous_brake_bar_height, 0, 0, 31);
+		draw_square(x, y - height, size_x, height - previous_brake_bar_height, 31, 0, 0);
 	}
 
 
@@ -98,7 +98,7 @@ void gui_draw_lap_time(int x, int y, int value)
 	{
 		first_draw_lap_time = false;
 
-		write_text_small_font("Lap time :", 31, 0, 0, 0, 0, 0, x, y, 240);
+		write_text_small_font("Lap time :", 31, 63, 31, 0, 0, 0, x, y, 240);
 	}
 
 
