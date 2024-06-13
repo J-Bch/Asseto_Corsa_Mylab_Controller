@@ -19,6 +19,7 @@
 #define LCD_DC 30
 #define nCS_LCD 16
 #define BL_ctrl 18
+#define CIRCLE_THRESHOLD 3
 
 int ms_counter = 0;
 

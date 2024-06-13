@@ -42,6 +42,7 @@ def socket_callback(callback: any):
             uart.serial_send(struct.pack("f", 0.0))
             uart.serial_send(struct.pack("f", 0.0))
             uart.serial_send(struct.pack("f", 0.0))
+            uart.serial_send(struct.pack("I", 0))
             uart.serial_send(struct.pack("?", False))
             uart.serial_send(struct.pack("?", False))
 
@@ -99,7 +100,6 @@ def receive_n_send(data_raw, _):
     last_time_udp_recieved = datetime.now()
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
     duration = datetime.now() - last_time_sent
-    print(live_data['engineRPM'])
     if(duration.microseconds > MESSAGE_SENT_WAIT_MICROSECONDS):
         last_time_sent = datetime.now()
         print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])

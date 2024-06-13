@@ -12,6 +12,7 @@
 
 #include "LPC17xx.h"
 #include "dashboard.h"
+#include "lib/fonts.h"
 #include "lib/uart.h"
 #include "lib/lcd.h"
 #include "lib/can.h"
@@ -106,32 +107,32 @@ void dashboard_main()
 
 		if(telem->is_abs_enabled)
 		{
-			write_text_small_font("ABS enabled", 31, 0, 0, 0, 0, 0, 0, 0, 240);
+			write_text_small_font("ABS enabled", 31, 0, 0, 0, 0, 0, 10, 20, 240);
 
 			abs_text_whiped = false;
 		}
 		else if (!abs_text_whiped)
 		{
-			draw_square(0, 0, 8*sizeof("ABS enabled"), 12, 0, 0, 0);
+			draw_square(10, 20, 8*sizeof("ABS enabled"), SMALL_FONT_HEIGHT, 0, 0, 0);
 			abs_text_whiped = true;
 		}
 
 		if(telem->is_tc_enabled)
 		{
-			write_text_small_font("TC enabled", 31, 0, 0, 0, 0, 0, 0, 20, 240);
+			write_text_small_font("TC enabled", 31, 0, 0, 0, 0, 0, 10, 40, 240);
 
 			tc_text_whiped = false;
 		}
 		else if (!tc_text_whiped)
 		{
-			draw_square(0, 20, 8*sizeof("TC enabled"), 12, 0, 0, 0);
+			draw_square(10, 40, 8*sizeof("TC enabled"), SMALL_FONT_HEIGHT, 0, 0, 0);
 			tc_text_whiped = true;
 		}
 
 
 		gui_draw_accel_bar(190, 120, 10, 120, telem->gas);
 		gui_draw_brake_bar(210, 120, 10, 120, telem->brake);
-		gui_draw_lap_time(0, 50, telem->lap_time);
+		gui_draw_lap_time(10, 0, telem->lap_time);
 
 
 
