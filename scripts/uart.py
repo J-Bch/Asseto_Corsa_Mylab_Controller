@@ -26,4 +26,15 @@ def serial_get_nonblock():
     value = ser.read_all()
     return value
 
+def serial_get_line():
+    global ser
+    value = ser.read_until(b'\xff')
+    return value
+
+
+def serial_get_data():
+    global ser
+    value = ser.read(5)
+    return value
+
 

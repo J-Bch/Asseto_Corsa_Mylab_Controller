@@ -2,7 +2,9 @@ import socket
 import unpack_struct
 import uart
 import struct
-import time
+import threading
+import gamepad
+import numpy
 from datetime import datetime
 # infos: https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub
 
@@ -16,7 +18,7 @@ SOCKET_TIMEOUT = 5
 MESSAGE_SENT_WAIT_MICROSECONDS = 100000
 last_time_sent = datetime.now()
 message_counter = 0
-    
+pad = ()
 #############
 # Function
 
@@ -91,18 +93,12 @@ def receive_n_send(data_raw, _):
     global last_time_sent
     global message_counter
 
-    if(uart.serial_get_nonblock() == b'RESET'):
-        print("Reset recieved, resetting")
-        metadata = handshake()
-        uart.init_serial()
-        return
-
     last_time_udp_recieved = datetime.now()
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
     duration = datetime.now() - last_time_sent
     if(duration.microseconds > MESSAGE_SENT_WAIT_MICROSECONDS):
         last_time_sent = datetime.now()
-        print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
+        # print(live_data['speed_Kmh'], live_data['lapTime'], live_data['wheelAngularSpeed_0'])
         uart.serial_send(struct.pack("?", False)) #reset screen bool
         uart.serial_send(struct.pack("f", live_data['speed_Kmh']))
         uart.serial_send(struct.pack("I", live_data['lapTime']))
@@ -119,6 +115,22 @@ def receive_n_send(data_raw, _):
 
     
 
+
+def uart_thread():
+    while(1):
+        uart_recieve = uart.serial_get_line()
+        
+        if((len(uart_recieve) == 6) and (uart_recieve[0:5] == b'RESET')):
+            print("Reset recieved, resetting")
+            # metadata = handshake()
+            # uart.init_serial()
+        elif((len(uart_recieve) == 4) ):
+            print(uart_recieve)
+            pad.a = uart_recieve[0]
+            pad.b = uart_recieve[1]
+            pad.rotation = uart_recieve[2] if uart_recieve[2] < 128 else ((-256 + uart_recieve[2]))
+            
+            
 #########
 # Main
 
@@ -127,16 +139,19 @@ print("UDP target port: %s" % UDP_PORT)
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
-
 sock.settimeout(SOCKET_TIMEOUT)
-
-print("Listening...")
-
-metadata = handshake()
 
 uart.init_serial()   
 
-socket_callback(receive_n_send) 
+pad = gamepad.Gamepad()
+pad.start()
+
+th = threading.Thread(target=uart_thread)
+th.start()
+
+# print("Listening...")
+
+# metadata = handshake()
+
+# socket_callback(receive_n_send) 
  
-
-
