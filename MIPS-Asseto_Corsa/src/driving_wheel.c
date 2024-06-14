@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "LPC17xx.h"
 #include "driving_wheel.h"
@@ -30,6 +31,7 @@ void btn_a_rising_handler();
 void btn_b_rising_handler();
 void btn_a_falling_handler();
 void btn_b_falling_handler();
+void send_wheel_rotation();
 
 bool is_screen_saver_wheel_displaying = false;
 
@@ -50,7 +52,6 @@ void driving_wheel_main()
 	callback_add(BTN_A_FALLING_CALLBACK, &btn_a_falling_handler);
 	callback_add(BTN_B_FALLING_CALLBACK, &btn_b_falling_handler);
 
-	float accelerometer_values_real_world[3];
 //	int16_t accelerometer_can_values[3];
 //	uint8_t accelerometer_can_values_splitted[6];
 
@@ -62,7 +63,8 @@ void driving_wheel_main()
 	while(1)
 	{
 		callback_do();
-		accelerometer_get_real_world_value(accelerometer_values_real_world);
+
+		send_wheel_rotation();
 //		printf("%f\n", accelerometer_values_real_world[0]);
 	}
 }
@@ -137,5 +139,33 @@ void btn_b_falling_handler()
 	uint8_t data[8] = { 0 };
 	data[0] = CAN_BTN_B_DATA_NUMBER;
 	data[1] = 0;
+	can_send(0, 0, 2, data);
+}
+
+#define ABS(x)(x > 0 ? x : -x)
+
+void send_wheel_rotation(){
+
+	static float accelerometer_values_real_world[3];
+
+	accelerometer_get_real_world_value(accelerometer_values_real_world);
+
+	float x = accelerometer_values_real_world[0];
+	float y = accelerometer_values_real_world[1];
+	float z = accelerometer_values_real_world[2];
+
+	//               get angle                     * direction 		  * scale factor
+	float rotation;
+
+	// dead zone and avoid using data when wheel is tilted
+	if((ABS(z) > 0.4) || (ABS(x) > 0.95)){
+		rotation = 0;
+	} else {
+		rotation = acos(x / sqrt(x * x + y * y)) * (y > 0 ? -1 : 1) * 45;
+	}
+
+	uint8_t data[8] = { 0 };
+	data[0] = CAN_WHEEL_ROTATION;
+	data[1] = (int8_t)rotation;
 	can_send(0, 0, 2, data);
 }

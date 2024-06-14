@@ -14,6 +14,7 @@
 #define CAN_BTN_A_DATA_NUMBER 2
 #define CAN_BTN_B_DATA_NUMBER 3
 #define CAN_RPM_DATA_NUMBER 4
+#define CAN_WHEEL_ROTATION 5
 
 void can_init();
 void can_send(uint32_t id, uint8_t ext_id, uint8_t data_len, uint8_t data[data_len]);

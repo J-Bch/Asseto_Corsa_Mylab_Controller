@@ -14,7 +14,7 @@ void uart_init();
 void uart_send(char *value, uint8_t size);
 void uart_recieve();
 void put_char(char c);
-char uart_get_char();
+int uart_get_char(char *c);
 int count();
 void uart_clear();
 

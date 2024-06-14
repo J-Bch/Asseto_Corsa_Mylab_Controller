@@ -118,14 +118,20 @@ void uart_send(char *value, uint8_t size)
 
 }
 
-char uart_get_char()
+int uart_get_char(char *c)
 {
+	/*
 	while(uart_buffer.head == uart_buffer.tail);//wait if no char has been received
+	*/
+	if(uart_buffer.head == uart_buffer.tail){
+		return 0;
+	}
 
 	NVIC_DisableIRQ(UART0_IRQn);
-	char c = int_circular_buffer_get(&uart_buffer);
+	*c = int_circular_buffer_get(&uart_buffer);
 	NVIC_EnableIRQ(UART0_IRQn);
-	return c;
+
+	return 1;
 }
 
 void put_char(char c)
