@@ -150,6 +150,31 @@ typedef struct  __attribute__ ((__packed__)) _descriptor {
 	uint8_t  bNumConfigurations;	// Number of possible configurations
 } descriptor_t;
 
+
+//typedef struct  __attribute__ ((__packed__)) _status {
+//	uint8_t  bLength;				// Size of this descriptor in bytes
+//	uint8_t  bDescriptorType;		// DEVICE descriptor type (= 1)
+//	uint16_t bcdUSB;				// USB Spec release number
+//	uint8_t  bDeviceClass;			// Class code assigned by USB-IF
+//									// 00h means each interface defines its own class
+//									// FFh means vendor-defined class
+//									// Any other value must be a class code
+//	uint8_t  bDeviceSubClass;		// SubClass Code assigned by USB-IF
+//	uint8_t  bDeviceProtocol;		// Protocol Code assigned by USB-IF
+//	uint8_t  bMaxPacketSize0;		// Max packet size for endpoint 0.
+//									// Must be 8, 16, 32 or 64
+//	uint16_t  idVendor;				// Vendor ID - must be obtained from USB-IF
+//	uint16_t idProduct;				// Product ID - assigned by the manufacturer
+//	uint16_t bcdDevice;				// Device release number in binary coded decimal
+//	uint8_t  iManufacturer;			// Index of string descriptor describing manufacturer - set to 0 if no string
+//	uint8_t  iProduct;				// Index of string descriptor describing product - set to 0 if no string
+//	uint8_t  iSerialNumber;			// Index of string descriptor describing device serial number - set to 0 if no string
+//	uint8_t  bNumConfigurations;	// Number of possible configurations
+//} status_t;
+
+//typedef status_t;
+
+
 /**
  * HID globals
  */
@@ -234,51 +259,6 @@ uint16_t _sie_read(char command, sie_read_len_t len){
 	return bytes[0] + (bytes[1] << 8);
 }
 
-uint16_t tmp;
-
-void USB_IRQHandler(){
-
-
-	if(LPC_USB->USBDevIntSt & INT_EP_SLOW) {
-		int a = LPC_USB->USBEpIntSt ;
-		if(a & 1){
-			LPC_USB->USBEpIntClr = 1;
-			read_flag = 1;
-		}
-		if(a & 2){
-			LPC_USB->USBEpIntClr = 2;
-			write_flag = 1;
-		}
-
-		LPC_USB->USBDevIntClr = INT_EP_SLOW;
-
-
-	}
-
-	if(LPC_USB->USBDevIntSt & INT_RXENDPKT) {
-		LPC_USB->USBDevIntClr = INT_RXENDPKT;
-	}
-
-	if(LPC_USB->USBDevIntSt & INT_TXENDPKT) {
-		LPC_USB->USBDevIntClr = INT_TXENDPKT;
-		t_flag = 1;
-		printf("t\n");//
-	}
-
-	if(LPC_USB->USBDevIntSt & INT_DEV_STAT) {
-		printf("d\n");
-		LPC_USB->USBDevIntClr = INT_DEV_STAT;
-	}
-
-	if(LPC_USB->USBDevIntSt & INT_ERR_INT) {
-		printf("e\n");
-		LPC_USB->USBDevIntClr = INT_ERR_INT;
-	}
-
-}
-
-
-
 void _sie_write(char command, char byte){
 
 	_sie_command(command);
@@ -295,24 +275,58 @@ void _sie_write(char command, char byte){
 }
 
 
+uint16_t tmp;
+
+void USB_IRQHandler(){
+
+
+	if(LPC_USB->USBDevIntSt & INT_EP_SLOW) {
+
+		int a = LPC_USB->USBEpIntSt ;
+
+		if(a & 1){
+			LPC_USB->USBEpIntClr = 1;
+			read_flag = 1;
+		}
+
+		if(a & 2){
+			LPC_USB->USBEpIntClr = 2;
+			write_flag = 1;
+		}
+
+		LPC_USB->USBDevIntClr = INT_EP_SLOW;
+
+	}
+
+	if(LPC_USB->USBDevIntSt & INT_RXENDPKT) {
+		LPC_USB->USBDevIntClr = INT_RXENDPKT;
+	}
+
+	if(LPC_USB->USBDevIntSt & INT_TXENDPKT) {
+		LPC_USB->USBDevIntClr = INT_TXENDPKT;
+		t_flag = 1;
+//		printf("t\n");//
+	}
+
+	if(LPC_USB->USBDevIntSt & INT_DEV_STAT) {
+		LPC_USB->USBDevIntClr = INT_DEV_STAT;
+	}
+
+	if(LPC_USB->USBDevIntSt & INT_ERR_INT) {
+		printf("e\n");
+		LPC_USB->USBDevIntClr = INT_ERR_INT;
+	}
+
+}
+
+
+
+
+
 
 void clear_endpoint(int endpoint) {
 	_sie_read(SELECT_ENDPOINT + endpoint, 0);
 	_sie_read(CLEAR_BUFFER, 0);
-}
-
-
-void usb_write(){
-	LPC_USB->USBCtrl = 0b10;
-
-
-	while(1){
-		LPC_USB->USBTxPLen = 4; // bytes count
-
-		for (int i = 0; i < 1; ++i) {
-			LPC_USB->USBTxData = 0x01020304;
-		}
-	}
 }
 
 /*
@@ -320,7 +334,7 @@ void usb_write(){
  */
 void usb_set_address(uint8_t addr){
 
-	_sie_write(SET_ADDRESS, addr | ((addr ? 1 : 0) << 7));
+	_sie_write(SET_ADDRESS, addr | (1 << 7));
 
 }
 
@@ -330,7 +344,94 @@ void usb_reset(){
 	_sie_write(SET_ADDRESS, 0);
 }
 
+int ticks = 0;
+
+void SysTick_Handler()
+{
+	ticks++;
+}
+
+
+int wait_until(int ref, int ms){
+
+	int diff = ticks - (ref + ms);
+
+	if (diff > 0){
+		return diff;
+	}
+
+	while(ticks < (ref + ms)){
+		__WFI();
+	}
+
+	return diff;
+}
+
+void usb_write(int endpoint, int32_t* data, int len){
+
+	_sie_command(0x1);
+
+	LPC_USB->USBCtrl = 0b10 | (endpoint << 2);
+
+	LPC_USB->USBTxPLen = len;
+
+	int i = 0;
+
+	while (LPC_USB->USBCtrl & 0b10) {
+		LPC_USB->USBTxData = data[i++];
+	}
+
+//	wait_until(ticks, 50);
+
+	_sie_command(VALIDATE_BUFFER);
+}
+
+
+// returns 1 if invalid, 0 if valid
+int usb_read(int endpoint, int32_t* data, int clear, int* endpoint_status){
+
+
+	if(endpoint_status){
+		*endpoint_status = _sie_read(0x40, 1) & 0xff;
+	}
+
+	LPC_USB->USBCtrl = 0b01 | (endpoint << 2);
+
+	int len;
+
+	while(!((len = LPC_USB->USBRxPLen) & RX_READY));
+
+
+	if(!(len & RX_VALID)){
+		*endpoint_status = _sie_read(0x40, 1) & 0xff;
+
+		int tmp;
+		while(LPC_USB->USBCtrl & 0x1){
+			tmp = LPC_USB->USBRxData;
+		}
+
+		_sie_read(CLEAR_BUFFER, 1);
+		return 1;
+	}
+
+	for (int i = 0; i < (len & 0x3ff); ++i) {
+		data[i] = LPC_USB->USBRxData;
+	}
+
+	if(clear){
+		_sie_read(CLEAR_BUFFER, 1);
+	}
+
+	return 0;
+}
+
 void usb_init(){
+
+
+
+	SystemCoreClockUpdate();
+	SysTick_Config(SystemCoreClock / 100);
+
 
 	usb_buffer_circular_buffer_init(&usb_buff);
 
@@ -368,11 +469,11 @@ void usb_init(){
 
 
 	// Enable Slave mode for the desired endpoints by setting the corresponding bits in	USBEpIntEn.
+//	LPC_USB->USBEpIntEn = 0x3;
+//	LPC_USB->USBDevIntEn = INT_DEV_STAT | INT_EP_FAST | INT_EP_SLOW | INT_RXENDPKT | INT_TXENDPKT  | INT_ERR_INT;
+
 	LPC_USB->USBEpIntEn = 0x3;
-
-
-	LPC_USB->USBDevIntEn =  INT_DEV_STAT | INT_EP_FAST | INT_EP_SLOW | INT_RXENDPKT | INT_TXENDPKT  | INT_ERR_INT;
-
+	LPC_USB->USBDevIntEn = 0;//INT_DEV_STAT | INT_EP_FAST | INT_EP_SLOW | INT_RXENDPKT | INT_TXENDPKT  | INT_ERR_INT;
 
 //	clear_endpoint(0);
 
@@ -385,84 +486,69 @@ void usb_init(){
 
 	while(1){
 
-//		tmp = _sie_read(GET_ERROR_CODE, 1);
-//
-//		if(tmp & (1 << 4)){
-//			printf("get err: 0x%x\n", tmp & 0xf);
-//
-//			tmp = _sie_read(READ_ERROR_STATUS, 1);
-//
-//			printf("read err: 0x%x\n", tmp & 0xff);
-//
-//		}
-//
+		if((LPC_USB->USBDevIntSt >> 3) & 1){
 
-		// EP0RX
-		if(read_flag){
-//		if(LPC_USB->USBEpIntSt & 1){
+			int a = _sie_read(GET_DEVICE_STATUS, 1);
 
-			tmp = _sie_read(0, 1);
+			// if bus reset
+			if(a >> 4){
+				// select endpoint and set max size
+				LPC_USB->USBEpInd = 0;
+				LPC_USB->USBMaxPSize = MAX_SIZE;
+				while(!(LPC_USB->USBReEp & 3));
+			}
+
+			LPC_USB->USBDevIntClr = (1 << 3);
+		}
+
+		if(LPC_USB->USBEpIntSt & 0x3){
+
+			int endpoint_status = 0;
+
 
 			// READ SETUP
-			LPC_USB->USBCtrl = 0b01 | (0 << 2);
+			int invalid = usb_read(0, (int32_t *)(&setup_paquet), 1, &endpoint_status);
 
-			while(!(LPC_USB->USBRxPLen & RX_READY));
+			if(invalid){
+				continue;
+			}
 
-			int len = LPC_USB->USBRxPLen;
-			((uint32_t*) &setup_paquet)[0] = LPC_USB->USBRxData;
-		    ((uint32_t*) &setup_paquet)[1] = LPC_USB->USBRxData;
+		}
 
-//			tmp = _sie_read(0, 1);
-//			tmp = _sie_read(CLEAR_BUFFER, 1);
+		// EP0RX OUT
+		if(LPC_USB->USBEpIntSt & 1){
 
-
-			_sie_command(0);
 
 			if(setup_paquet.bRequest == HID_REQ_GET_DESCRIPTOR){
-				LPC_USB->USBCtrl = 0b10 | (0 << 2);
 
-				LPC_USB->USBTxPLen = 0x64;
+				usb_write(0, &device_descriptor, 0x12);
 
-				int i = 0;
-				while (LPC_USB->USBCtrl & 0b10) {
-					LPC_USB->USBTxData = ((uint32_t*)&device_descriptor)[i++];
-				}
+			} else if(setup_paquet.bRequest == HID_REQ_GET_STATUS){
 
-				_sie_command(VALIDATE_BUFFER);
+				printf("GET STATUS \n");
 
-				t_flag = 0;
-
+			} else if(setup_paquet.bRequest == HID_REQ_SET_ADDRESS) {
+//				printf("wtf\n");
+			} else {
+				printf("wtf\n");
 			}
 
 
+			LPC_USB->USBEpIntClr = 1;
+		}
 
-			if(setup_paquet.bRequest == HID_REQ_SET_ADDRESS)
+
+		if(LPC_USB->USBEpIntSt & 2){
+			if(setup_paquet.bRequest == HID_REQ_SET_ADDRESS){
+
+
 				usb_set_address(setup_paquet.wValue);
+//				printf("SET ADDRESS %d \n", setup_paquet.wValue);
 
-
-			if(!(len & RX_VALID)){
-				printf("Invalid\n");
 			}
 
-			read_flag = 0;
-//			printf("%d bytes received\n", len & 0x3ff);
-//			printf("Received:       0x%X%X\n", 	setup_paquet);
-//			printf("bmRequestType:  0x%x\n", 	setup_paquet.bmRequestType);
-//			printf("bRequest:       0x%x\n", 	setup_paquet.bRequest);
-//			printf("wValue:         0x%x\n", 	setup_paquet.wValue);
-//			printf("wIndex:         0x%x\n", 	setup_paquet.wIndex);
-//			printf("wLength:        0x%x\n", 	setup_paquet.wLength);
+			LPC_USB->USBEpIntClr = 2;
 		}
-
-		// EP0TX
-
-		if(write_flag){
-			tmp = _sie_read(GET_ERROR_CODE, 1);
-//			printf("er: %x\n", );
-			write_flag = 0;
-		}
-
-
 
 	}
 
