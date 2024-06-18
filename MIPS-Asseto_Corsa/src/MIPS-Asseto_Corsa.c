@@ -25,23 +25,51 @@
 #include "lib/uart.h"
 #include "lib/lcd.h"
 #include "lib/can.h"
+#include "lib/usb.h"
+#include "lib/touch.h"
+#include "lib/callback.h"
+#include "lib/buttons.h"
 
 
+int mode = 0;
 
 int main(void)
 {
 	LPC_GPIO2->FIODIR &= ~(1); //dip switch 0 to input
 
-//	usb_init();
+	// clear all interrupts on gpio2
+	LPC_GPIOINT->IO2IntClr = ~0;
 
 	if((LPC_GPIO2->FIOPIN & 0b1) == 0)
 	{
+		mode = 0;
 		dashboard_main();
 	}
 	else
 	{
+		mode = 1;
 		driving_wheel_main();
 	}
 
     return 0;
+}
+
+// since we can't have multiple definitions of functions
+// EINT3_IRQhandler is here to be used by both mode
+void EINT3_IRQHandler(){
+
+	if(mode == 1){
+
+		buttons_irqhandler();
+
+	} else {
+
+		// set touch flag
+		if(LPC_GPIOINT->IO2IntStatR & TOUCH_INT_GPIO){
+			LPC_GPIOINT->IO2IntClr = TOUCH_INT_GPIO;
+
+			callback_setflag(TOUCH_CALLBACK);
+		}
+
+	}
 }

@@ -39,7 +39,7 @@ void btns_init()
 
 
 
-void EINT3_IRQHandler()
+void buttons_irqhandler()
 {
 
 	//BTN B rising interrupt

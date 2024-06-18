@@ -14,6 +14,6 @@
 #define BTN_B_FALLING_CALLBACK 2003
 
 void btns_init();
-
+void buttons_irqhandler();
 
 #endif /* LIB_BUTTONS_H_ */

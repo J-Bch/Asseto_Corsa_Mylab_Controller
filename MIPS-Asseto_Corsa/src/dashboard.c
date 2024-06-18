@@ -18,13 +18,15 @@
 #include "lib/can.h"
 #include "lib/callback.h"
 #include "lib/custom_gui.h"
-
+#include "lib/touch.h"
+#include "lib/i2c.h"
 
 #define LEDS_R_ROTATION (1 << 7)
 #define LEDS_R_A		(1 << 6)
 #define LEDS_R_B		(1 << 5)
 #define LEDS_R_UART		(1 << 4)
 #define LEDS_T_UART		(1 << 3)
+
 
 void can_dashboard_recieve_handler();
 
@@ -61,12 +63,18 @@ void dashboard_main()
 	uart_init();
 	lcd_init();
 	can_init();
+	i2c_init();
+	delay(100);
 
 	LPC_GPIO2->FIODIR |= LEDS_R_A | LEDS_R_B | LEDS_R_ROTATION | LEDS_R_UART | LEDS_T_UART;
 	LPC_GPIO2->FIOCLR = LEDS_R_A | LEDS_R_B | LEDS_R_ROTATION | LEDS_R_UART | LEDS_T_UART;
 
+	LPC_GPIOINT->IO2IntEnR = TOUCH_INT_GPIO;
+	NVIC_EnableIRQ(EINT3_IRQn);
+
 	callback_reset();
 	callback_add(CAN_IRQn, &can_dashboard_recieve_handler);
+	callback_add(TOUCH_CALLBACK, &touch_process_int);
 
 	char buffer[sizeof(uart_telemetry)];
 	internal_message_counter = 0;
