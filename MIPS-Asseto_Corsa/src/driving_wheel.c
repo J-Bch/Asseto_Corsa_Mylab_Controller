@@ -173,9 +173,8 @@ void send_wheel_rotation(){
 	float rotation;
 
 	// dead zone and avoid using data when wheel is tilted
-	if((ABS(z) > 0.4 | ABS(x) > 0.97)){
+	if(ABS(z) > 0.4){
 
-		// if titled or perfectly vertical
 
 		rotation = 128;
 
