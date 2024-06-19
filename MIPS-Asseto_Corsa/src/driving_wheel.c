@@ -120,8 +120,7 @@ void can_wheel_recieve_handler()
 		gui_display_shift_indicator_leds(engine_RPM, CAR_MAX_RPM);
 	}
 
-//
-//	printf("%f\n", speed_adjusted);
+	can_watchdog = get_ms_counter();
 }
 
 void btn_a_rising_handler()
