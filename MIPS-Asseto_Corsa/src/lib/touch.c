@@ -27,7 +27,9 @@ typedef struct _touch_event_t {
 } touch_event_t;
 
 
+// global array of the registered buttons, initialised by touch_init()
 touch_button_t* g_buttons = 0;
+// global count of buttons
 int g_size = 0;
 
 
