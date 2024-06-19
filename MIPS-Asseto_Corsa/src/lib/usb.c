@@ -483,6 +483,8 @@ void usb_init(){
 	NVIC_EnableIRQ(USB_IRQn);
 
 
+	uint8_t events[100];
+	int i = 0;
 
 	while(1){
 
