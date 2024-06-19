@@ -295,7 +295,7 @@ void dashboard_reset_uart_communication()
 {
 	uart_clear();
 
-	uart_send("RESET", 5);
+	uart_send("RESET", sizeof(inputs));
 	SYNC
 
 	//Send reset screen to the wheel
