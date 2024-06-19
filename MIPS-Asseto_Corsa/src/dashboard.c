@@ -131,19 +131,11 @@ void dashboard_main()
 
 			uart_telemetry* telem = (uart_telemetry*)buffer;
 
-	//		printf("Speed : %f\n", telem->speed_kmh);
-	//		printf("Lap time : %i\n", telem->lap_time);
-	//		printf("Wheel 0 angular :%f\n", telem->wheel_angular_speed_0);
-	//		printf("gas : %f\n", telem->gas);
-	//		printf("Abs enabled ? : %i\n", telem->is_abs_enabled);
-	//		printf("TC enabled ? : %i\n", telem->is_tc_enabled);
-	//		printf("Received message counter : %i\n", telem->message_counter);
-	//		printf("Internal message counter : %i\n", internal_message_counter);
 
 
 			if(internal_message_counter != telem->message_counter)
 			{
-	//			printf("Counter missmatch, resseting comm\n");
+				// this means a paquet was lost
 				dashboard_reset_uart_communication();
 				continue;
 			}
