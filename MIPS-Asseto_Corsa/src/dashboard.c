@@ -29,6 +29,8 @@
 
 
 void can_dashboard_recieve_handler();
+void abs_touch_button(int state);
+void tcs_touch_button(int state);
 
 typedef struct __attribute__ ((__packed__)) _uart_telemetry
 {
@@ -44,6 +46,16 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	uint32_t message_counter;
 }uart_telemetry;
 
+
+typedef struct __attribute__ ((__packed__)) _inputs_t
+{
+	uint8_t rotation;
+	uint8_t accelerator;
+	uint8_t brake;
+	uint8_t abs;
+	uint8_t tcs;
+} inputs_t;
+
 bool abs_text_whiped = false;
 bool tc_text_whiped = false;
 
@@ -56,15 +68,19 @@ static char sync_marker = 255;
 
 #define SYNC uart_send(&sync_marker, 1);
 
-char inputs[5] = {0};
+inputs_t inputs = {0};
 
 void dashboard_main()
 {
-	uart_init();
 	lcd_init();
-	can_init();
 	i2c_init();
-	delay(100);
+	// set clock for i2c
+	LPC_I2C0->I2SCLH = 125;
+	LPC_I2C0->I2SCLL = 125;
+
+	uart_init();
+
+	can_init();
 
 	LPC_GPIO2->FIODIR |= LEDS_R_A | LEDS_R_B | LEDS_R_ROTATION | LEDS_R_UART | LEDS_T_UART;
 	LPC_GPIO2->FIOCLR = LEDS_R_A | LEDS_R_B | LEDS_R_ROTATION | LEDS_R_UART | LEDS_T_UART;
@@ -83,12 +99,18 @@ void dashboard_main()
 	gui_draw_screen_saver(50, 170, "Dashboard");
 	is_screen_saver_dashboard_displaying = true;
 
+
+	touch_button_t touch_buttons[2];
+	touch_buttons[0] = touch_create_button("ABS", 0, 280, 120, 40, 255, 0, 0, &abs_touch_button);
+	touch_buttons[1] = touch_create_button("TCS", 120, 280, 120, 40, 0, 255, 0, &abs_touch_button);
+	touch_init(touch_buttons, 2);
+
+
 	int i = 0;
 	int local_counter = 0;
 
 	while(1)
 	{
-
 
 		if(uart_get_char(&buffer[i])){
 
@@ -202,7 +224,7 @@ void dashboard_main()
 		if((local_counter + 20) < get_ms_counter()){
 			LPC_GPIO2->FIOSET = LEDS_T_UART;
 
-			uart_send(inputs, 3);
+			uart_send((char*)&inputs, 3);
 			SYNC
 
 			LPC_GPIO2->FIOCLR = LEDS_T_UART;
@@ -224,11 +246,11 @@ void can_dashboard_recieve_handler()
 		LPC_GPIO2->FIOSET = LEDS_R_A;
 		if(received_data[1] == 1) {
 			draw_square(0, 280, 8*sizeof("A pressed"), 12, 0, 0, 0);
-			inputs[0] = 0;
+			inputs.accelerator = 0;
 		}
 		else if(received_data[1] == 0) {
 			write_text_small_font("A pressed", 31, 0, 0, 0, 0, 0, 0, 280, 240);
-			inputs[0] = 1;
+			inputs.accelerator = 1;
 		}
 
 		LPC_GPIO2->FIOCLR = LEDS_R_A;
@@ -238,11 +260,11 @@ void can_dashboard_recieve_handler()
 		LPC_GPIO2->FIOSET = LEDS_R_B;
 		if(received_data[1] == 1){
 			draw_square(0, 300, 8*sizeof("B pressed"), 12, 0, 0, 0);
-			inputs[1] = 0;
+			inputs.brake = 0;
 		}
 		else if(received_data[1] == 0){
 			write_text_small_font("B pressed", 31, 0, 0, 0, 0, 0, 0, 300, 240);
-			inputs[1] = 1;
+			inputs.brake = 1;
 		}
 
 		LPC_GPIO2->FIOCLR = LEDS_R_B;
@@ -250,9 +272,17 @@ void can_dashboard_recieve_handler()
 	else if(received_data[0] == CAN_WHEEL_ROTATION)
 	{
 		LPC_GPIO2->FIOSET = LEDS_R_ROTATION;
-		inputs[2] = received_data[1];
+		inputs.rotation = received_data[1];
 		LPC_GPIO2->FIOCLR = LEDS_R_ROTATION;
 	}
+}
+
+void abs_touch_button(int state){
+	inputs.abs = state;
+}
+
+void tcs_touch_button(int state){
+	inputs.tcs = state;
 }
 
 void dashboard_reset_uart_communication()
