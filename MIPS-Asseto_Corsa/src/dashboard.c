@@ -251,7 +251,8 @@ void can_dashboard_recieve_handler()
 	else if(received_data[0] == CAN_WHEEL_ROTATION)
 	{
 		LPC_GPIO2->FIOSET = LEDS_R_ROTATION;
-		inputs.rotation = received_data[1];
+		// 255 is protected value
+		inputs.rotation = received_data[1] == 255 ? 254 : received_data[1];
 		LPC_GPIO2->FIOCLR = LEDS_R_ROTATION;
 	}
 }
