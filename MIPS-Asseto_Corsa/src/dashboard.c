@@ -102,8 +102,7 @@ void dashboard_main()
 
 	touch_button_t touch_buttons[2];
 	touch_buttons[0] = touch_create_button("ABS", 0, 280, 120, 40, 255, 0, 0, &abs_touch_button);
-	touch_buttons[1] = touch_create_button("TCS", 120, 280, 120, 40, 0, 255, 0, &abs_touch_button);
-	touch_init(touch_buttons, 2);
+	touch_buttons[1] = touch_create_button("TCS", 120, 280, 120, 40, 0, 255, 0, &tcs_touch_button);
 
 
 	int i = 0;
@@ -159,6 +158,7 @@ void dashboard_main()
 				uint8_t data[8] = { 0 };
 				data[0] = CAN_RESET_CMD_NUMBER;
 				can_send(0, 0, 1, data);
+				touch_init(0, 0);
 				continue;
 			}
 
@@ -217,6 +217,10 @@ void dashboard_main()
 			internal_message_counter++;
 
 			LPC_GPIO2->FIOCLR = LEDS_R_UART;
+
+			if(internal_message_counter==1){
+				touch_init(touch_buttons, 2);
+			}
 		}
 
 		callback_do();
