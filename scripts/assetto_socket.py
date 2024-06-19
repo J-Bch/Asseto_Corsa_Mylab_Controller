@@ -93,7 +93,6 @@ def receive_n_send(data_raw, _):
     global last_time_sent
     global message_counter
 
-    last_time_udp_recieved = datetime.now()
     live_data = unpack_struct.process(unpack_struct.live_structure_keys, unpack_struct.live_structure_fmt, data_raw)
     duration = datetime.now() - last_time_sent
     if(duration.microseconds > MESSAGE_SENT_WAIT_MICROSECONDS):
@@ -120,15 +119,18 @@ def uart_thread():
     while(1):
         uart_recieve = uart.serial_get_line()
         
-        if((len(uart_recieve) == 6) and (uart_recieve[0:5] == b'RESET')):
+        if(len(uart_recieve)!= 6):
+            continue
+        
+        if(uart_recieve[0:5] == b'RESET'):
             print("Reset recieved, resetting")
-            # metadata = handshake()
-            # uart.init_serial()
-        elif((len(uart_recieve) == 4) ):
+            metadata = handshake()
+            uart.init_serial()
+        else:
             print(uart_recieve)
-            pad.a = uart_recieve[0]
-            pad.b = uart_recieve[1]
-            pad.rotation = uart_recieve[2] if uart_recieve[2] < 128 else ((-256 + uart_recieve[2]))
+            # pad.a = uart_recieve[0]
+            # pad.b = uart_recieve[1]
+            # pad.rotation = uart_recieve[2] if uart_recieve[2] < 128 else ((-256 + uart_recieve[2]))
             
             
 #########
@@ -143,15 +145,15 @@ sock.settimeout(SOCKET_TIMEOUT)
 
 uart.init_serial()   
 
-pad = gamepad.Gamepad()
-pad.start()
+# pad = gamepad.Gamepad()
+# pad.start()
 
 th = threading.Thread(target=uart_thread)
 th.start()
 
-# print("Listening...")
+print("Listening...")
 
-# metadata = handshake()
+metadata = handshake()
 
-# socket_callback(receive_n_send) 
+socket_callback(receive_n_send) 
  
