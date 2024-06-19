@@ -70,6 +70,13 @@ static char sync_marker = 255;
 
 inputs_t inputs = {0};
 
+void dashboard_display_screen_saver(){
+	whipe_screen();
+	gui_reset_values();
+	gui_draw_screen_saver(50, 170, "Dashboard");
+	is_screen_saver_dashboard_displaying = true;
+}
+
 void dashboard_main()
 {
 	lcd_init();
@@ -95,9 +102,7 @@ void dashboard_main()
 	char buffer[sizeof(uart_telemetry)];
 	internal_message_counter = 0;
 
-	gui_reset_values();
-	gui_draw_screen_saver(50, 170, "Dashboard");
-	is_screen_saver_dashboard_displaying = true;
+	dashboard_display_screen_saver();
 
 
 	touch_button_t touch_buttons[2];
@@ -107,31 +112,26 @@ void dashboard_main()
 
 	int i = 0;
 	int local_counter = 0;
+	int uart_watchdog  = get_ms_counter(); // used to timeout on host
 
 	while(1)
 	{
 
 		if(uart_get_char(&buffer[i])){
-
+			uart_watchdog = get_ms_counter();
 			i++;
 		}
 
 		if(i >= sizeof(uart_telemetry)){
 
+			uart_clear();
+
+
 			LPC_GPIO2->FIOSET = LEDS_R_UART;
 
 			i = 0;
 
-			if(is_screen_saver_dashboard_displaying)
-			{
-				gui_clear_screen_saver(50, 170, "Dashboard");
-				is_screen_saver_dashboard_displaying = false;
-			}
-
-
 			uart_telemetry* telem = (uart_telemetry*)buffer;
-
-
 
 			if(internal_message_counter != telem->message_counter)
 			{
@@ -140,20 +140,18 @@ void dashboard_main()
 				continue;
 			}
 
-			if(telem->stop_display)
+			if(telem->stop_display && !is_screen_saver_dashboard_displaying)
 			{
-				whipe_screen();
-				gui_reset_values();
-				gui_draw_screen_saver(50, 170, "Dashboard");
-				is_screen_saver_dashboard_displaying = true;
-
-				uint8_t data[8] = { 0 };
-				data[0] = CAN_RESET_CMD_NUMBER;
-				can_send(0, 0, 1, data);
+				dashboard_display_screen_saver();
 				touch_init(0, 0);
 				continue;
 			}
 
+			if(is_screen_saver_dashboard_displaying)
+			{
+				gui_clear_screen_saver(50, 170, "Dashboard");
+				is_screen_saver_dashboard_displaying = false;
+			}
 
 			gui_draw_accel_bar(190, 120, 10, 120, telem->gas);
 			gui_draw_brake_bar(210, 120, 10, 120, telem->brake);
@@ -187,6 +185,7 @@ void dashboard_main()
 			if(internal_message_counter==1){
 				touch_init(touch_buttons, 2);
 			}
+
 		}
 
 		callback_do();
@@ -202,6 +201,14 @@ void dashboard_main()
 			LPC_GPIO2->FIOCLR = LEDS_T_UART;
 
 			local_counter += 20;
+		}
+
+		if(((uart_watchdog + 1000) < get_ms_counter()) && !is_screen_saver_dashboard_displaying){
+
+			uart_clear();
+
+			dashboard_display_screen_saver();
+
 		}
 	}
 }

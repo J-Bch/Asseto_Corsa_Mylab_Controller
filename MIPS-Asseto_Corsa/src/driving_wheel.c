@@ -35,6 +35,17 @@ void send_wheel_rotation();
 
 bool is_screen_saver_wheel_displaying = false;
 
+void wheel_display_screen_saver(){
+	whipe_screen();
+	gui_reset_values();
+	gui_draw_screen_saver(50, 170, "Driving Wheel");
+	is_screen_saver_wheel_displaying = true;
+}
+
+
+
+int can_watchdog = 0;
+
 void driving_wheel_main()
 {
 	btns_init();
@@ -53,11 +64,10 @@ void driving_wheel_main()
 	callback_add(BTN_B_FALLING_CALLBACK, &btn_b_falling_handler);
 
 
-	gui_reset_values();
-	gui_draw_screen_saver(50, 170, "Driving Wheel");
-	is_screen_saver_wheel_displaying = true;
+	wheel_display_screen_saver();
 
 	int local_counter = 0;
+
 
 	while(1)
 	{
@@ -73,6 +83,11 @@ void driving_wheel_main()
 			local_counter += 20;
 		}
 
+		if(((can_watchdog + 1000) < get_ms_counter()) && !is_screen_saver_wheel_displaying){
+
+			wheel_display_screen_saver();
+
+		}
 	}
 }
 
@@ -91,15 +106,7 @@ void can_wheel_recieve_handler()
 
 	can_get_message(&received_id, &received_data);
 
-	if(received_data[0] == CAN_RESET_CMD_NUMBER)
-	{
-		whipe_screen();
-		gui_reset_values();
-		gui_draw_screen_saver(50, 170, "Driving Wheel");
-		is_screen_saver_wheel_displaying = true;
-		return;
-	}
-	else if(received_data[0] == CAN_SPEED_DATA_NUMBER)
+	if(received_data[0] == CAN_SPEED_DATA_NUMBER)
 	{
 		uint32_t speed = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
 		gui_draw_speed(80, 30, speed);
