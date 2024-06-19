@@ -6,7 +6,7 @@ import uinput
 class Gamepad:
     def __init__(
         self,
-        sensibility
+        sensibility = 1.0
     ):
         self.events = (
             uinput.BTN_A,
@@ -17,6 +17,7 @@ class Gamepad:
             uinput.ABS_Z + (0, 255, 0, 0),
             uinput.ABS_RX + (0, 255, 0, 0),
         )
+        self.sensibility = sensibility
         self.rotation = 0
         self.brake = 0
         self.acceleration = 0
@@ -41,7 +42,12 @@ class Gamepad:
             # device.emit(uinput.BTN_9, 0)
             
             while True:
-                device.emit(uinput.ABS_X, self.rotation, syn=True)
+                
+                # apply a factor on the delta between the rotation and the center (128)
+                rotation_sensi_boost = (self.rotation - 128) * self.sensibility
+                rotation_post = int(max(min(128 + rotation_sensi_boost, 255), 0))
+                
+                device.emit(uinput.ABS_X, rotation_post, syn=True)
                 device.emit(uinput.ABS_Y, self.acceleration * 255)
                 device.emit(uinput.ABS_Z, self.brake * 255)
                 device.emit(uinput.BTN_A, self.btn_a)

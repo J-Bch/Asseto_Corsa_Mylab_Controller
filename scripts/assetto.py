@@ -1,6 +1,7 @@
 import socket
 import unpack_struct
 import uart
+import sys
 import struct
 import threading
 import gamepad
@@ -211,14 +212,25 @@ def uart_thread():
 # Main
 #--------------------------------------
 
+
+sensibility = 1
+
+try:
+    if(len(sys.argv) > 1):
+        sensibility = float(sys.argv[1])
+except:
+    print("Argument must be a float")
+    quit(1)
+
+
 # Display
 
 log = Log()
 
 
 # Virtual gamepad
-
-pad = gamepad.Gamepad()
+        
+pad = gamepad.Gamepad(sensibility)
 pad.start()
 
 
