@@ -101,8 +101,8 @@ void dashboard_main()
 
 
 	touch_button_t touch_buttons[2];
-	touch_buttons[0] = touch_create_button("ABS", 0, 280, 120, 40, 255, 0, 0, &abs_touch_button);
-	touch_buttons[1] = touch_create_button("TCS", 120, 280, 120, 40, 0, 255, 0, &tcs_touch_button);
+	touch_buttons[0] = touch_create_button("ABS", 0, 200, 120, 50, 255, 0, 0, &abs_touch_button);
+	touch_buttons[1] = touch_create_button("TCS", 120, 200, 120, 50, 0, 255, 0, &tcs_touch_button);
 
 
 	int i = 0;
@@ -160,7 +160,6 @@ void dashboard_main()
 			gui_draw_lap_time(10, 0, telem->lap_time);
 
 
-
 			//Send speed
 			uint8_t data[8] = { 0 };
 			uint32_t speed_adjusted = (uint32_t)telem->speed_kmh;
@@ -180,7 +179,6 @@ void dashboard_main()
 			data[4] = ((telem->engine_RPM  >> 24) & 0xFF);
 			can_send(0, 0, 5, data);
 
-	//		printf("\n");
 
 			internal_message_counter++;
 
