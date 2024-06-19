@@ -56,16 +56,16 @@ def socket_callback(callback: any):
 
             try :
                 # this is  done so the dashboard can send a reset screen cmd to the driving wheel, INCLUDE ALL THE SAME NUMBER OF DATA OR WILL CAUSE A RESTART
-                uart.serial_send(struct.pack("?", True))
-                uart.serial_send(struct.pack("f", 0.0))
-                uart.serial_send(struct.pack("I", 0))
-                uart.serial_send(struct.pack("f", 0.0))
-                uart.serial_send(struct.pack("f", 0.0))
-                uart.serial_send(struct.pack("f", 0.0))
-                uart.serial_send(struct.pack("I", 0))
-                uart.serial_send(struct.pack("?", False))
-                uart.serial_send(struct.pack("?", False))
-                uart.serial_send(struct.pack("I", message_counter))
+                # uart.serial_send(struct.pack("?", True))
+                # uart.serial_send(struct.pack("f", 0.0))
+                # uart.serial_send(struct.pack("I", 0))
+                # uart.serial_send(struct.pack("f", 0.0))
+                # uart.serial_send(struct.pack("f", 0.0))
+                # uart.serial_send(struct.pack("f", 0.0))
+                # uart.serial_send(struct.pack("I", 0))
+                # uart.serial_send(struct.pack("?", False))
+                # uart.serial_send(struct.pack("?", False))
+                # uart.serial_send(struct.pack("I", message_counter))
                 
                 message_counter += 1
                 
@@ -161,7 +161,7 @@ def receive_n_send(data_raw, _):
 def uart_thread():
     global log
     global last_time_received
-
+    global pad
     
     while(1):
         ready = False
@@ -185,15 +185,19 @@ def uart_thread():
                     continue
                 
                 if(uart_recieve[0:5] == b'RESET'):
+                    
                     log.update_dashboard_status('RESETING')
                     handshake()
                     uart.init_serial()
+                    
                 else:
+                    
                     log.update_dashboard_status('CONNECTED')
-                    # print(uart_recieve)
-                    # pad.a = uart_recieve[0]
-                    # pad.b = uart_recieve[1]
-                    # pad.rotation = uart_recieve[2] if uart_recieve[2] < 128 else ((-256 + uart_recieve[2]))
+                    pad.rotation = uart_recieve[0]
+                    pad.brake = uart_recieve[1]
+                    pad.acceleration = uart_recieve[2]
+                    pad.btn_a = uart_recieve[3]
+                    pad.btn_b = uart_recieve[4]
                     
             except:
                 
@@ -214,7 +218,8 @@ log = Log()
 
 # Virtual gamepad
 
-pad = gamepad.Gamepad().start()
+pad = gamepad.Gamepad()
+pad.start()
 
 
 # Connexion with the dashboard
