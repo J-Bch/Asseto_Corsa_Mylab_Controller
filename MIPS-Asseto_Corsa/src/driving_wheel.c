@@ -156,6 +156,9 @@ void btn_b_falling_handler()
 }
 
 #define ABS(x)(x > 0 ? x : -x)
+#define ANGLE_FACTOR 40.584510488 // 255 / (2 pi), 255 as it is max value
+#define PI 3.141592654
+
 
 void send_wheel_rotation(){
 
@@ -167,18 +170,22 @@ void send_wheel_rotation(){
 	float y = accelerometer_values_real_world[1];
 	float z = accelerometer_values_real_world[2];
 
-	//               get angle                     * direction 		  * scale factor
 	float rotation;
 
 	// dead zone and avoid using data when wheel is tilted
-	if((ABS(z) > 0.4) || (ABS(x) > 0.95)){
-		rotation = 0;
+	if((ABS(z) > 0.4 | ABS(x) > 0.97)){
+
+		// if titled or perfectly vertical
+
+		rotation = 128;
+
 	} else {
-		rotation = acos(x / sqrt(x * x + y * y)) * (y > 0 ? -1 : 1) * 45;
+
+		rotation = ((acos(x / sqrt(x * x + y * y)) * (y > 0 ? -1 : 1)) + PI ) * ANGLE_FACTOR;
 	}
 
 	uint8_t data[8] = { 0 };
 	data[0] = CAN_WHEEL_ROTATION;
-	data[1] = (int8_t)rotation;
+	data[1] = (uint8_t)rotation;
 	can_send(0, 0, 2, data);
 }
