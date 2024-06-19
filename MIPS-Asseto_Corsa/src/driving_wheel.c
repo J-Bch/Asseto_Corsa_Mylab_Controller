@@ -52,8 +52,6 @@ void driving_wheel_main()
 	callback_add(BTN_A_FALLING_CALLBACK, &btn_a_falling_handler);
 	callback_add(BTN_B_FALLING_CALLBACK, &btn_b_falling_handler);
 
-//	int16_t accelerometer_can_values[3];
-//	uint8_t accelerometer_can_values_splitted[6];
 
 	gui_reset_values();
 	gui_draw_screen_saver(50, 170, "Driving Wheel");
@@ -65,7 +63,7 @@ void driving_wheel_main()
 		callback_do();
 
 		send_wheel_rotation();
-//		printf("%f\n", accelerometer_values_real_world[0]);
+
 	}
 }
 
