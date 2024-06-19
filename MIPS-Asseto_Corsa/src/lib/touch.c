@@ -50,6 +50,13 @@ void touch_print_button(touch_button_t* button){
 
 }
 
+
+void touch_print_all_buttons(){
+	for (int i = 0; i < g_size; ++i) {
+		touch_print_button(&g_buttons[i]);
+	}
+}
+
 touch_button_t touch_create_button(char* text, int x, int y, int width, int height, int r, int g, int b, void (handler(int state))){
 
 	touch_button_t button = {
@@ -73,6 +80,8 @@ touch_button_t touch_create_button(char* text, int x, int y, int width, int heig
 void touch_init(touch_button_t* buttons, int size){
 	g_buttons = buttons;
 	g_size = size;
+
+	touch_print_all_buttons();
 }
 
 
