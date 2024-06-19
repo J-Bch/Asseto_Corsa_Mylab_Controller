@@ -188,8 +188,8 @@ def uart_thread():
                 if(uart_recieve[0:5] == b'RESET'):
                     
                     log.update_dashboard_status('RESETING')
-                    handshake()
-                    uart.init_serial()
+                    handshake() # redo handhake to have a clean slate
+    
                     
                 else:
                     
