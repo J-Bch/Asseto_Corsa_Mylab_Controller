@@ -57,12 +57,21 @@ void driving_wheel_main()
 	gui_draw_screen_saver(50, 170, "Driving Wheel");
 	is_screen_saver_wheel_displaying = true;
 
+	int local_counter = 0;
 
 	while(1)
 	{
 		callback_do();
 
-		send_wheel_rotation();
+
+
+		// send via uart the inputs if more than 20 ms have passed since last tranmission
+		if((local_counter + 20) < get_ms_counter()){
+
+			send_wheel_rotation();
+
+			local_counter += 20;
+		}
 
 	}
 }
