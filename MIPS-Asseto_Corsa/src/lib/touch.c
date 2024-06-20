@@ -40,10 +40,10 @@ void touch_print_button(touch_button_t* button){
 	int b = button->state ? (button->g / 16) : button->g;
 	int c = button->state ? (button->b / 16) : button->b;
 
-	draw_square(button->x, button->y, button->width, button->height, c, a, b);
+	draw_square(button->x, button->y, button->width, button->height, a, b, c);
 	write_text_small_font(button->text,
 			0,0,0,
-			c,a,b,
+			a,b,c,
 			button->x + BUTTON_PADDING,
 			button->y + (button->height/ 2) - 7,
 			button->x + button->width - (BUTTON_PADDING * 2));
