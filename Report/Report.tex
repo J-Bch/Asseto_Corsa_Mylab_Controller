@@ -277,6 +277,8 @@
         \item Boutons
     \end{enumerate}
 
+	Le code doit être le même sur les deux cartes, la différence se faisant au lancement en fonction de la position du dipswitch 0.
+
     \subsection{Présentation du projet}
 
     Le projet que nous avons choisi consiste à développer une sorte de manette de jeu pour jouer au simulateur de course automobile "Assetto Corsa". 
@@ -305,6 +307,34 @@
         Du côté du PC se trouve Assetto Corsa, un jeu de voiture ainsi qu'un script python tournant en arrière-plan. Ce script python se charge de récupérer la télémétrie d'Assetto Corsa à travers un socket UDP mis à disposition par le jeu (il s'agit d'une méthode d'accès à la télémétrie courante dans le monde des simulateurs). Le python récupère alors les informations qui l'intéressent et les envoie sur l'UART vers le "Tableau de bord", autrement dit l'une des deux cartes. 
 		
 		Depuis cette même connexion UART, le script récupère les inputs (inclinaison du volant, pression des boutons, etc.) sous forme de tableau d'octets envoyé par la carte tableau de bord. Ces informations sont ensuite transmises à une classe "Gamepad" qui simule un périphérique qui est ensuite utilisée par le jeu comme un n'importe quel autre périphérique/manette/etc et qui est ainsi utilisable en jeu.
+
+		Le script gère les coupures de connexion avec le jeu et/ou la carte, tout comme les cartes gèrent les pertes de connexion entre elles et avec le PC, affichant la situation actuelle à l'utilisateur de la manière suivante:
+
+		```
+		AC TELEMETRY & VIRTUAL GAMEPAD:
+		-------------------------------------
+
+		Assetto Corsa link : NOT CONNECTED                         
+		Dashboard link     : NOT CONNECTED   
+		```
+
+		Les états possibles pour "Assetto Corsa link" sont:
+
+		\begin{enumerate}
+			\item "NOT CONNECTED", la connection n'a pas encore été établie
+			\item "TRYING HANDSHAKE", le script tente de faire un handshake avec Assettot Corsa dans le but de recevoir les données de télémetrie
+			\item "TIMEOUT", le script n'as pas reçu de réponse de la part d'Assetto Corsa depuis un moment, indiquant que le jeu s'est arrêté ou qu'il y a un problème
+			\item "CONNECTED". le script reçoit les données correctement
+		\end{enumerate}
+
+		Les états possibles pour "Dashboard link" sont: 
+
+		\begin{enumerate}
+			\item "NOT CONNECTED", le câble UART n'est pas branché
+			\item "RESETING", le script se reset pour corriger un problème de mismatch avec le dashboard 
+			\item "TIMEOUT", le script n'a pas reçu de donnée du dashboard depuis un moment
+			\item "CONNECTED". le script reçoit les inputs du dashboard correctement
+		\end{enumerate}
 
 		% //TODO mettre une image du jeu avec le script qui toure à côté
 
