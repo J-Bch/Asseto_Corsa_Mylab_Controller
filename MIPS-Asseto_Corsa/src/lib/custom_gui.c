@@ -198,9 +198,13 @@ void gui_display_shift_indicator_leds(int engine_RPM, int max_engine_RPM)
 
 	int value = ratio*7;
 
-	//TODO add mask
+	LPC_GPIO2->FIOMASK0 = (uint8_t)~(0xff);
+	if(value != 0)
+		LPC_GPIO2->FIOPIN0 = ((0b1 << (value +1)) -1); //Turn leds based on the value
+	else
+		LPC_GPIO2->FIOPIN0 = 0;
 
-	LPC_GPIO2->FIOPIN0 = ((0b1 << (value +1)) -1); //Turn ON all leds
+	LPC_GPIO2->FIOMASK0 = ~(0);
 
 
 	previous_RPM_value = value;

@@ -38,6 +38,7 @@ bool is_screen_saver_wheel_displaying = false;
 void wheel_display_screen_saver(){
 	whipe_screen();
 	gui_reset_values();
+	gui_display_shift_indicator_leds(0, CAR_MAX_RPM); //reset dipswitch lights
 	gui_draw_screen_saver(50, 170, "Driving Wheel");
 	is_screen_saver_wheel_displaying = true;
 }
