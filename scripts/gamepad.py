@@ -48,8 +48,8 @@ class Gamepad:
                 rotation_post = int(max(min(128 + rotation_sensi_boost, 255), 0))
                 
                 device.emit(uinput.ABS_X, rotation_post, syn=True)
-                device.emit(uinput.ABS_Y, self.acceleration * 255)
-                device.emit(uinput.ABS_Z, self.brake * 255)
+                device.emit(uinput.ABS_Y, self.acceleration * 20)
+                device.emit(uinput.ABS_Z, self.brake * 127)
                 device.emit(uinput.BTN_A, self.btn_a)
                 device.emit(uinput.BTN_B, self.btn_b)
                 time.sleep(0.1)
