@@ -104,7 +104,35 @@
 % Themes, Colors and Styles
 %=================================================
 
+\lstset{
+    backgroundcolor=\color{ltGrey2},
+    aboveskip=3mm,
+    belowskip=3mm,
+    framexleftmargin = 1em,
+    showstringspaces=false,
+    columns=flexible,
+    basicstyle={\small\ttfamily},
+    numbers=none,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{dkRed},
+    commentstyle=\color{ltGrey},
+    stringstyle=\color{orange-yellow},
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=3
+}
+
+\usepackage{color}
+\definecolor{dkRed}{RGB}{204,0,0}
+\definecolor{ltGrey}{RGB}{150,150,150}
+\definecolor{ltGrey2}{RGB}{240,240,240}
+\definecolor{orange-yellow}{RGB}{250,200,0}
+
+
 \mdfdefinestyle{Question}{backgroundcolor = black!5, linecolor=black!10, linewidth=2pt}
+
+\renewcommand*{\lstlistingname}{Extrait de code}
+\renewcommand*{\lstlistlistingname}{Table des extraits de code}
 
 %=================================================
 % Packages Configuration
@@ -165,6 +193,8 @@
 %=================================================
 %=================================================
 
+
+
 \begin{document}
 	
 	\selectlanguage{french}
@@ -221,6 +251,17 @@
 	
 	\blankpage
 
+	{\hypersetup{hidelinks} \tableofcontents}
+	
+	\pagebreak
+	
+	{\hypersetup{hidelinks} \listoffigures}
+	
+	\addcontentsline{toc}{section}{Table des extraits de code}
+	{\hypersetup{hidelinks} \lstlistoflistings}
+	
+	\pagebreak
+
     \section{Introduction}
 
     Dans le cadre du cours Microcontrôleur et Périphériques (MIPS), nous avons dû réaliser un projet. Celui-ci a pour but, et exigences, de réunir l'ensemble des interfaces et fonctionnalités étudiées durant ce semestre.
@@ -267,6 +308,59 @@
 
 		% //TODO mettre une image du jeu avec le script qui toure à côté
 
+		\subsubsection{Détails du protocole entre le PC et le tableau de bord}
+		\label{telemetrie}
+
+			Le code python s'exécutant sur le PC être chargé d'à la fois envoyer les données de télémétrie mais aussi de recevoir les inputs provenant du tableau de bord.
+
+			Pour l'envoi de la télémétrie, il envoie en UART un ensemble de données de télémétrie récupérées via le port UDP du jeu. Voici l'ensemble des données composant une trame :
+
+			\begin{lstlisting}[language=python, caption=Données télémétriques envoyées par le python]
+uart.serial_send(struct.pack("?", False)) #reset screen bool
+uart.serial_send(struct.pack("f", live_data['speed_Kmh']))
+uart.serial_send(struct.pack("I", live_data['lapTime']))
+uart.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
+uart.serial_send(struct.pack("f", live_data['gas']))
+uart.serial_send(struct.pack("f", live_data['brake']))
+uart.serial_send(struct.pack("I", int(live_data["engineRPM"])))
+uart.serial_send(struct.pack("?", live_data['isAbsEnabled']))
+uart.serial_send(struct.pack("?", live_data['isTcEnabled']))
+uart.serial_send(struct.pack("I", message_counter))
+			\end{lstlisting}
+
+			Du côté du tableau de bord, la réception de l'UART se charge de remplir une structure contenant toutes les informations nécessaires à un traitement de données (une sorte de trame complète).
+
+			Voici le contenu de cette "trame" : 
+
+			\begin{lstlisting}[language=c, caption=Contenu d'une "trame" de données télémétriques côté tableau de bord]
+typedef struct __attribute__ ((__packed__)) _uart_telemetry
+{
+	bool stop_display;
+	float speed_kmh;
+	uint32_t lap_time;
+	float wheel_angular_speed_0;
+	float gas;
+	float brake;
+	uint32_t engine_RPM;
+	bool is_abs_enabled;
+	bool is_tc_enabled;
+	uint32_t message_counter;
+}uart_telemetry;
+			\end{lstlisting}
+
+		
+			Une donnée supplémentaire envoyée par le python est le "message\_counter". Cela permet au tableau de bord de détecter une erreur, dans le cas ou le message counter n'est pas le même que le sien, et ainsi provoquer un reset de la communication. Cela peut arriver si le script python n'est pas correctement synchronisé avec le tableau de bord, entrainant un remplissage erroné de la structure d'une trame.
+
+			Le code python peut aussi demander au tableau de bord de se réinitialiser, dans le cas ou, par exemple, l'utilisateur quitte une course. En effet, si le jeu ne s'exécute plus, les données de télémétrie ne sont plus envoyées et il faut alors "nettoyer" les écrans du tableau de bord et du volant afin qu'ils n'affichent pas de données erronées.
+
+
+			Il est très important de noter qu'il y a une limite à la vitesse d'envoi du python, qu'il est très important de ne pas dépasser. Cette limite est assurée par la variable globale suivante : 
+
+\begin{lstlisting}[language=python, caption=Variable de ralentissement de l'envoi des données par le python]
+MESSAGE_SENT_WAIT_MICROSECONDS = 100000
+\end{lstlisting}
+
+		Si l'envoi devient trop rapide, il est possible que le tableau de bord n'arrive pas à suivre et doive alors se réinitialiser en permanance.
 
         \subsection{MyLab2 Volant}
 
@@ -274,13 +368,51 @@
 
         Le volant s'occupe alors de récupérer les valeurs de son accéléromètre et de les convertir en un angle. Il envoie en continu le résultat de ce calcul par CAN à a carte servant de tableau de bord. Lors de l'appui sur le bouton A ou B, un message CAN est transmis immédiatement au tableau de bord. 
 		
-		Le volant reçoit sur le CAN, les RPM du moteur et la vitesse de la voiture. Ceux-ci seront affichés respectivement sur les LEDS des dipswitchs et sur le LCD sous forme de cadrant avec une aiguille.
+		Le volant reçoit sur le CAN, les RPM du moteur et la vitesse de la voiture. Ceux-ci seront affichés respectivement sur les LEDS des dipswitchs et sur le LCD sous forme de cadrant avec une aiguille. 
+
+		\subsubsection{Modifications du protocole CAN}
+		\label{CAN}
+
+		Le protocole CAN a été légèrement modifié afin d'ajouter une zone de commande ainsi qu'une zone de données dans chaque message. Les 8 premiers bits sont utilisés pour signaler la commande utilisée. Cela permet de faire un traitement en fonction du type de message reçu. Voici l'exemple de la réception CAN du volant : 
+
+\begin{lstlisting}[language=c, caption=Exemple de réception CAN en fonction du champ de commande]
+uint32_t received_id;
+uint8_t* received_data;
+
+can_get_message(&received_id, &received_data);
+
+if(received_data[0] == CAN_SPEED_DATA_NUMBER)
+{
+	uint32_t speed = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
+	gui_draw_speed(80, 30, speed);
+
+	gui_draw_speedometer(120, 160, 80, speed);
+}
+else if(received_data[0] == CAN_RPM_DATA_NUMBER)
+{
+	uint32_t engine_RPM = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
+
+	gui_display_shift_indicator_leds(engine_RPM, CAR_MAX_RPM);
+}
+\end{lstlisting}
+
+
+		Voici l'ensemble des commandes différentes possibles actuellement : 
+
+\begin{lstlisting}[language=c, caption=Liste des commandes CAN disponibles]
+#define CAN_RESET_CMD_NUMBER 0
+#define CAN_SPEED_DATA_NUMBER 1
+#define CAN_BTN_A_DATA_NUMBER 2
+#define CAN_BTN_B_DATA_NUMBER 3
+#define CAN_RPM_DATA_NUMBER 4
+#define CAN_WHEEL_ROTATION 5
+\end{lstlisting}
 
 		% //TODO mettre une image de près du volant
         
         \subsection{MyLab2 Tableau de bord}
 
-        Le tableau de bord est la pièce centrale du projet : cette carte sert d'intermédiaire entre le volant et le PC. Le tableau de bord reçoit à travers l'UART la télémétrie venant du jeu, dont il affiche l'accélérateur et le frein, mais aussi le temps du tour (lap time). Il retransmet ensuite la vitesse et les RPM au volant via CAN. De celui-ci il récupère la rotation et les boutons, qu'il stocke dans un tableau local. Toutes les 20ms, il envoie alors ce tableau par la même connexion UART pour que le PC puisse interpréter les inputs. 
+        Le tableau de bord est la pièce centrale du projet : cette carte sert d'intermédiaire entre le volant et le PC. Le tableau de bord reçoit à travers l'UART (Ref section \ref{telemetrie}) la télémétrie venant du jeu, dont il affiche l'accélérateur et le frein, mais aussi le temps du tour (lap time). Il retransmet ensuite la vitesse et les RPM au volant via CAN (Ref section \ref{CAN}). De celui-ci il récupère la rotation et les boutons, qu'il stocke dans un tableau local. Toutes les 20ms, il envoie alors ce tableau par la même connexion UART pour que le PC puisse interpréter les inputs. 
 
         \subsection{Matériel}    
 
