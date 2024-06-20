@@ -105,9 +105,11 @@ void dashboard_main()
 	dashboard_display_screen_saver();
 
 
-	touch_button_t touch_buttons[2];
-	touch_buttons[0] = touch_create_button("ABS", 0, 200, 120, 50, 255, 0, 0, &abs_touch_button);
-	touch_buttons[1] = touch_create_button("TCS", 120, 200, 120, 50, 0, 255, 0, &tcs_touch_button);
+	touch_button_t touch_buttons[4];
+	touch_buttons[0] = touch_create_button("ABS +", 0, 150, 120, 50, 255, 0, 0, &abs_touch_button);
+	touch_buttons[1] = touch_create_button("TCS +", 120, 150, 120, 50, 0, 255, 0, &tcs_touch_button);
+	touch_buttons[2] = touch_create_button("ABS -", 0, 200, 120, 50, 255, 0, 0, &abs_touch_button);
+	touch_buttons[3] = touch_create_button("TCS -", 120, 200, 120, 50, 0, 255, 0, &tcs_touch_button);
 
 
 	int i = 0;
@@ -183,7 +185,7 @@ void dashboard_main()
 			LPC_GPIO2->FIOCLR = LEDS_R_UART;
 
 			if(internal_message_counter==1){
-				touch_init(touch_buttons, 2);
+				touch_init(touch_buttons, 4);
 			}
 
 		}
