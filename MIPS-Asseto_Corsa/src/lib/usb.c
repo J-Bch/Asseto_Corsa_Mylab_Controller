@@ -483,6 +483,8 @@ void usb_init(){
 	NVIC_EnableIRQ(USB_IRQn);
 
 
+	uint8_t events[100];
+	int i = 0;
 
 	while(1){
 
@@ -515,6 +517,8 @@ void usb_init(){
 
 		}
 
+		events[i++] = setup_paquet.bRequest;
+
 		// EP0RX OUT
 		if(LPC_USB->USBEpIntSt & 1){
 
@@ -528,6 +532,11 @@ void usb_init(){
 				printf("GET STATUS \n");
 
 			} else if(setup_paquet.bRequest == HID_REQ_SET_ADDRESS) {
+
+				LPC_USB->USBEpIntClr = 1;
+				LPC_USB->USBEpIntClr = 2;
+
+				usb_set_address(setup_paquet.wValue);
 //				printf("wtf\n");
 			} else {
 				printf("wtf\n");
@@ -542,7 +551,7 @@ void usb_init(){
 			if(setup_paquet.bRequest == HID_REQ_SET_ADDRESS){
 
 
-				usb_set_address(setup_paquet.wValue);
+//				usb_set_address(setup_paquet.wValue);
 //				printf("SET ADDRESS %d \n", setup_paquet.wValue);
 
 			}

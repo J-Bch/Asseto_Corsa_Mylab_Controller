@@ -11,7 +11,7 @@
 #include "callback.h"
 #include "circular_buffer.h"
 #include <stdio.h>
-
+#include "lcd.h"
 
 #define PCCAN1 13 //power to can1
 
@@ -164,9 +164,12 @@ void can_init()
 	NVIC_EnableIRQ(CAN_IRQn);
 }
 
+#define SEND_TIMEOUT 20
+
 void can_send(uint32_t id, uint8_t ext_id, uint8_t data_len, uint8_t data[data_len])
 {
-	while(1)
+	int ref = get_ms_counter();
+	while((ref + SEND_TIMEOUT) > get_ms_counter())
 	{
 		if(((LPC_CAN1->SR >> TBS1) & 0b1) != 0)
 		{
