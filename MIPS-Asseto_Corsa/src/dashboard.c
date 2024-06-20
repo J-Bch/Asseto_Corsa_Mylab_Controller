@@ -29,8 +29,10 @@
 
 
 void can_dashboard_recieve_handler();
-void abs_touch_button(int state);
-void tcs_touch_button(int state);
+void abs_touch_button_plus(int state);
+void abs_touch_button_minus(int state);
+void tc_touch_button_plus(int state);
+void tc_touch_button_minus(int state);
 
 typedef struct __attribute__ ((__packed__)) _uart_telemetry
 {
@@ -53,7 +55,7 @@ typedef struct __attribute__ ((__packed__)) _inputs_t
 	uint8_t accelerator;
 	uint8_t brake;
 	uint8_t abs;
-	uint8_t tcs;
+	uint8_t tc;
 } inputs_t;
 
 bool abs_text_whiped = false;
@@ -105,10 +107,12 @@ void dashboard_main()
 	dashboard_display_screen_saver();
 
 
-	touch_button_t touch_buttons[2];
-	touch_buttons[0] = touch_create_button("ABS", 0, 200, 120, 50, 255, 0, 0, &abs_touch_button);
-	touch_buttons[1] = touch_create_button("TCS", 120, 200, 120, 50, 0, 255, 0, &tcs_touch_button);
-
+	touch_button_t touch_buttons[] = {
+		touch_create_button("ABS +", 0, 160, 120, 50, 255, 0, 0, &abs_touch_button_plus),
+		touch_create_button("ABS -", 0, 220, 120, 50, 255, 255, 0, &abs_touch_button_minus),
+		touch_create_button("TC -", 120, 160, 120, 50, 0, 255, 0, &tc_touch_button_plus),
+		touch_create_button("TC +", 120, 220, 120, 50, 0, 255, 255, &tc_touch_button_minus)
+	};
 
 	int i = 0;
 	int local_counter = 0;
@@ -153,6 +157,31 @@ void dashboard_main()
 				is_screen_saver_dashboard_displaying = false;
 			}
 
+			if(telem->is_abs_enabled)
+			{
+				write_text_small_font("ABS enabled", 31, 0, 0, 0, 0, 0, 10, 20, 240);
+
+				abs_text_whiped = false;
+			}
+			else if (!abs_text_whiped)
+			{
+				draw_square(10, 20, 8*sizeof("ABS enabled"), SMALL_FONT_HEIGHT, 0, 0, 0);
+				abs_text_whiped = true;
+			}
+
+			if(telem->is_tc_enabled)
+			{
+				write_text_small_font("TC enabled", 31, 0, 0, 0, 0, 0, 10, 40, 240);
+
+				tc_text_whiped = false;
+			}
+			else if (!tc_text_whiped)
+			{
+				draw_square(10, 40, 8*sizeof("TC enabled"), SMALL_FONT_HEIGHT, 0, 0, 0);
+				tc_text_whiped = true;
+			}
+
+
 			gui_draw_accel_bar(190, 120, 10, 120, telem->gas);
 			gui_draw_brake_bar(210, 120, 10, 120, telem->brake);
 			gui_draw_lap_time(10, 0, telem->lap_time);
@@ -183,7 +212,7 @@ void dashboard_main()
 			LPC_GPIO2->FIOCLR = LEDS_R_UART;
 
 			if(internal_message_counter==1){
-				touch_init(touch_buttons, 2);
+				touch_init(touch_buttons, GET_BUTTONS_COUNT(touch_buttons));
 			}
 
 		}
@@ -257,12 +286,32 @@ void can_dashboard_recieve_handler()
 	}
 }
 
-void abs_touch_button(int state){
-	inputs.abs = state;
+void abs_touch_button_plus(int state){
+	if(state)
+		inputs.abs |= 1;
+	else
+		inputs.abs &= ~(1);
 }
 
-void tcs_touch_button(int state){
-	inputs.tcs = state;
+void abs_touch_button_minus(int state){
+	if(state)
+		inputs.abs |= 2;
+	else
+		inputs.abs &= ~(2);
+}
+
+void tc_touch_button_plus(int state){
+	if(state)
+		inputs.tc |= 1;
+	else
+		inputs.tc &= ~(1);
+}
+
+void tc_touch_button_minus(int state){
+	if(state)
+		inputs.tc |= 2;
+	else
+		inputs.tc &= ~(2);
 }
 
 void dashboard_reset_uart_communication()

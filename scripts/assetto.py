@@ -197,8 +197,10 @@ def uart_thread():
                     pad.rotation = uart_recieve[0]
                     pad.brake = uart_recieve[1]
                     pad.acceleration = uart_recieve[2]
-                    pad.btn_a = uart_recieve[3]
-                    pad.btn_b = uart_recieve[4]
+                    pad.btn_0 = 1 if uart_recieve[3] == 1 else 0
+                    pad.btn_1 = 1 if uart_recieve[3] == 2 else 0
+                    pad.btn_2 = 1 if uart_recieve[4] == 1 else 0
+                    pad.btn_3 = 1 if uart_recieve[4] == 2 else 0
                     
             except:
                 

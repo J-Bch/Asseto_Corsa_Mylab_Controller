@@ -25,6 +25,8 @@ typedef struct _touch_button_t {
 	int state;
 } touch_button_t;
 
+#define GET_BUTTONS_COUNT(buttons)(sizeof(buttons) / sizeof(touch_button_t))
+
 touch_button_t touch_create_button(char* text, int x, int y, int width, int height, int r, int g, int b, void (handler(int state)));
 void touch_init(touch_button_t* buttons, int size);
 void touch_process_int();

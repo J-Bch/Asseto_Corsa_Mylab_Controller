@@ -17,6 +17,7 @@
 #define TOUCH_START_REG	0x02
 
 #define EVENT_PRESS_DOWN 0
+#define LIFT_UP			 1
 #define TOUCH_MAX_COUNT 2
 
 
@@ -35,9 +36,9 @@ int g_size = 0;
 
 void touch_print_button(touch_button_t* button){
 
-	int a = button->state ? button->r : (button->r / 16);
-	int b = button->state ? button->g : (button->g / 16);
-	int c = button->state ? button->b : (button->b / 16);
+	int a = button->state ? (button->r / 16) : button->r;
+	int b = button->state ? (button->g / 16) : button->g;
+	int c = button->state ? (button->b / 16) : button->b;
 
 	draw_square(button->x, button->y, button->width, button->height, c, a, b);
 	write_text_small_font(button->text,
@@ -94,14 +95,6 @@ void touch_process_int(){
 
 	i2c_read_bytes(TOUCH_ADDR, 2, sizeof(buffer), buffer);
 
-	int touch_count = buffer[0] & 0xf;
-
-	// if touch isn't detected
-	if(!touch_count){
-		return;
-	}
-
-
 
 	touchs_event[0].type = ((buffer[1] >> 6 ) & 0x3);
 	touchs_event[0].x = SCREEN_WIDTH - (((buffer[1] & 0xf) << 8) | buffer[2]);
@@ -116,7 +109,7 @@ void touch_process_int(){
 
 		for (int j = 0; j < TOUCH_MAX_COUNT; ++j) {
 
-			if(touchs_event[j].type == EVENT_PRESS_DOWN){
+			if((touchs_event[j].type == EVENT_PRESS_DOWN) || (touchs_event[j].type == LIFT_UP)){
 
 				if(
 						(touchs_event[j].x > g_buttons[i].x) &&
@@ -125,7 +118,7 @@ void touch_process_int(){
 						(touchs_event[j].y < (g_buttons[i].y + g_buttons[i].height))
 				  )
 				{
-					g_buttons[i].state = !g_buttons[i].state;
+					g_buttons[i].state = !touchs_event[j].type;
 					g_buttons[i].handler(g_buttons[i].state);
 					touch_print_button(&g_buttons[i]);
 				}

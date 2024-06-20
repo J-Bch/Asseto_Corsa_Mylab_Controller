@@ -13,7 +13,7 @@ def init_serial():
     ser = serial.Serial(
         port='/dev/ttyUSB0',
         baudrate=115200,
-        timeout=1
+        timeout=3
     )
     ser.isOpen()
 

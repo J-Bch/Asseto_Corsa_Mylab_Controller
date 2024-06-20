@@ -21,8 +21,10 @@ class Gamepad:
         self.rotation = 0
         self.brake = 0
         self.acceleration = 0
-        self.btn_a = 0
-        self.btn_b = 0
+        self.btn_0 = 0
+        self.btn_1 = 0
+        self.btn_2 = 0
+        self.btn_3 = 0
         
 
     def pt(self):
@@ -50,8 +52,10 @@ class Gamepad:
                 device.emit(uinput.ABS_X, rotation_post, syn=True)
                 device.emit(uinput.ABS_Y, self.acceleration * 255)
                 device.emit(uinput.ABS_Z, self.brake * 255)
-                device.emit(uinput.BTN_A, self.btn_a)
-                device.emit(uinput.BTN_B, self.btn_b)
+                device.emit(uinput.BTN_0, self.btn_0)
+                device.emit(uinput.BTN_1, self.btn_1)
+                device.emit(uinput.BTN_2, self.btn_2)
+                device.emit(uinput.BTN_3, self.btn_3)
                 time.sleep(0.1)
 
     def start(self):
