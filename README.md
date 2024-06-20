@@ -23,7 +23,7 @@ You can select proton GE here or set it to run only Asseto Corsa : (Right click 
 
 ### Configure the game's controls 
 
-In order for the game to recognize the controls sent by our Mylabs, we need to copy the `controller_config/MIPS_Custom.ini` file from this git into this folder (example from my computer) : `/home/joachim/.steam/debian-installation/steamapps/compatdata/244210/pfx/drive_c/users/steamuser/Documents/Assetto Corsa/cfg/controllers/savedsetups`
+In order for the game to recognize the controls sent by our Mylabs, we need to copy the `controller_config/MIPS_Custom.ini` file from this git into this folder (example from my computer) : `~/.steam/debian-installation/steamapps/compatdata/244210/pfx/drive_c/users/steamuser/Documents/Assetto Corsa/cfg/controllers/savedsetups`
 
 
 In the game's settings (after a relaunch of the game), you can now load the MIPS_Custom controller preset : 
@@ -35,6 +35,8 @@ In the game's settings (after a relaunch of the game), you can now load the MIPS
 ## Launch the telemetry tool
 
 To display the telemetry onto the dashboard and to be able to send inputs from it, you must run the following python3 script : `scripts/asseto.py`.
+
+You may need to install the following modules in your python environnment: uinput, pyserial
 
 ## Play the game
 
