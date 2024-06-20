@@ -25,7 +25,6 @@
 #include "lib/uart.h"
 #include "lib/lcd.h"
 #include "lib/can.h"
-#include "lib/usb.h"
 #include "lib/touch.h"
 #include "lib/callback.h"
 #include "lib/buttons.h"
