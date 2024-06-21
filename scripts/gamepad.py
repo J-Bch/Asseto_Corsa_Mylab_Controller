@@ -11,11 +11,13 @@ class Gamepad:
         self.events = (
             uinput.BTN_A,
             uinput.BTN_B,
-            uinput.BTN_0, uinput.BTN_1, uinput.BTN_2, uinput.BTN_3, uinput.BTN_4, uinput.BTN_5, uinput.BTN_6, uinput.BTN_7, uinput.BTN_8, uinput.BTN_9,
+            uinput.BTN_X,
+            uinput.BTN_Y,
+            # uinput.BTN_0, uinput.BTN_1, uinput.BTN_2, uinput.BTN_3, uinput.BTN_4, uinput.BTN_5, uinput.BTN_6, uinput.BTN_7, uinput.BTN_8, uinput.BTN_9,
             uinput.ABS_X + (0, 255, 0, 0),
             uinput.ABS_Y + (0, 255, 0, 0),
             uinput.ABS_Z + (0, 255, 0, 0),
-            uinput.ABS_RX + (0, 255, 0, 0),
+            # uinput.ABS_RX + (0, 255, 0, 0),
         )
         self.sensibility = sensibility
         self.rotation = 0
@@ -42,6 +44,8 @@ class Gamepad:
             # device.emit(uinput.BTN_7, 0)
             # device.emit(uinput.BTN_8, 0)
             # device.emit(uinput.BTN_9, 0)
+            test = True
+            testo = True
             
             while True:
                 
@@ -52,10 +56,13 @@ class Gamepad:
                 device.emit(uinput.ABS_X, rotation_post, syn=True)
                 device.emit(uinput.ABS_Y, self.acceleration * 20)
                 device.emit(uinput.ABS_Z, self.brake * 127)
-                device.emit(uinput.BTN_0, self.btn_0)
-                device.emit(uinput.BTN_1, self.btn_1)
-                device.emit(uinput.BTN_2, self.btn_2)
-                device.emit(uinput.BTN_3, self.btn_3)
+                device.emit(uinput.BTN_A, self.btn_1)
+                device.emit(uinput.BTN_B, self.btn_0)
+                device.emit(uinput.BTN_X, self.btn_2)
+                device.emit(uinput.BTN_Y, self.btn_3)
+
+                test = not test
+                testo = not testo
                 time.sleep(0.1)
 
     def start(self):

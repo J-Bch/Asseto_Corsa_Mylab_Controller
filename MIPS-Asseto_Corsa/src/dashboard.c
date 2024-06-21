@@ -110,8 +110,8 @@ void dashboard_main()
 	touch_button_t touch_buttons[] = {
 		touch_create_button("ABS +", 0, 160, 120, 50, 255, 0, 0, &abs_touch_button_plus),
 		touch_create_button("ABS -", 0, 220, 120, 50, 255, 255, 0, &abs_touch_button_minus),
-		touch_create_button("TC -", 120, 160, 120, 50, 0, 255, 0, &tc_touch_button_plus),
-		touch_create_button("TC +", 120, 220, 120, 50, 0, 255, 255, &tc_touch_button_minus)
+		touch_create_button("TC +", 120, 160, 120, 50, 0, 255, 0, &tc_touch_button_plus),
+		touch_create_button("TC -", 120, 220, 120, 50, 0, 255, 255, &tc_touch_button_minus)
 	};
 
 	int i = 0;
