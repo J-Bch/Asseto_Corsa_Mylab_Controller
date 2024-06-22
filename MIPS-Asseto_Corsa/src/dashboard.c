@@ -39,7 +39,6 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	bool stop_display;
 	float speed_kmh;
 	uint32_t lap_time;
-	float wheel_angular_speed_0;
 	float gas;
 	float brake;
 	uint32_t engine_RPM;
