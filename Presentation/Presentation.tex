@@ -92,7 +92,7 @@
 
     \begin{tikzpicture}[remember picture,overlay]
         \node[anchor=south west,inner sep=0pt] at ($(current page.south west)-(-0.5cm,-1.2cm)$) {
-           \tiny{2\textsuperscript{ème} année HEPIA ISC}
+           \tiny{2\textsuperscript{e} année HEPIA ISC}
         };
     \end{tikzpicture}
     
@@ -174,6 +174,29 @@
 
 \end{frame}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{frame}    
+    \begin{center}
+        \begin{tikzpicture}[remember picture,overlay]
+            \node [copy shadow={draw=LightOrange,fill=LightOrange,opacity=0.8,shadow xshift=-0.6ex,
+                shadow yshift=-0.6ex},fill=LightYellow,draw=LightYellow,thick,font=\bfseries,anchor=north,inner sep=5pt] at ($(current page.north)-(0cm,0.5cm)$)
+                    {\LARGE Implémentation - Schéma};
+        \end{tikzpicture}
+    \end{center}
+
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{Images/architecture.drawio.png}
+    \end{figure}
+
+
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}    
@@ -185,15 +208,21 @@
         \end{tikzpicture}
     \end{center}
 
+    \vspace{0.2cm}
     \hspace{0.5cm}\underline{{Volant :}}
     \normalsize
-    \vspace{0.5cm}
+    \vspace{0.2cm}
     \begin{itemize}[label=\textbullet, leftmargin=1.5cm]
         \item Accéléromètre pour l'inclinaison
         \item Boutons A et B pour l'accélérateur et le frein
         \item Affichage de la vitesse (écran)
         \item Affichage des RPM (LEDs)
     \end{itemize}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.3\textwidth]{Images/mylab_wheel.jpg}
+    \end{figure}
 
 \end{frame}
 
@@ -210,14 +239,20 @@
         \end{tikzpicture}
     \end{center}
 
+    \vspace{0.2cm}
     \hspace{0.5cm}\underline{{Dashboard :}}
     \normalsize
-    \vspace{0.5cm}
+    \vspace{0.2cm}
     \begin{itemize}[label=\textbullet, leftmargin=1.5cm]
         \item Affichage du lap time
         \item Affichage du taux de freinage et accélération
         \item Boutons (touchscreen) pour l'ABS et TC
     \end{itemize}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.3\textwidth]{Images/mylab_dashboard.jpg}
+    \end{figure}
 
 \end{frame}
 
@@ -246,29 +281,18 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
 \begin{frame}    
     \begin{center}
         \begin{tikzpicture}[remember picture,overlay]
             \node [copy shadow={draw=LightOrange,fill=LightOrange,opacity=0.8,shadow xshift=-0.6ex,
-                shadow yshift=-0.6ex},fill=LightYellow,draw=LightYellow,thick,font=\bfseries,anchor=north,inner sep=5pt] at ($(current page.north)-(0cm,0.5cm)$)
-                    {\LARGE Implémentation - Schéma};
+                shadow yshift=-0.6ex},fill=LightYellow,draw=LightYellow,thick,font=\bfseries,anchor=north,inner sep=5pt] at ($(current page.north)-(0cm,4cm)$)
+                    {\LARGE Démonstration};
         \end{tikzpicture}
     \end{center}
 
-
-    \begin{figure}[h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{Images/architecture.drawio.png}
-    \end{figure}
-
-
 \end{frame}
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 
 \begin{frame}    
@@ -292,18 +316,6 @@
 \end{frame}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}    
-    \begin{center}
-        \begin{tikzpicture}[remember picture,overlay]
-            \node [copy shadow={draw=LightOrange,fill=LightOrange,opacity=0.8,shadow xshift=-0.6ex,
-                shadow yshift=-0.6ex},fill=LightYellow,draw=LightYellow,thick,font=\bfseries,anchor=north,inner sep=5pt] at ($(current page.north)-(0cm,4cm)$)
-                    {\LARGE Démonstration};
-        \end{tikzpicture}
-    \end{center}
-
-\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -327,7 +339,7 @@
 
     \begin{itemize}[label=\textbullet, leftmargin=1.5cm]
         \item Pas avec les spécifications initiales (USB)
-        \item Est peu précis
+        \item Est peu précis 
         \item Nécessité de rendre l'ensemble plus robuste
     \end{itemize}
 
