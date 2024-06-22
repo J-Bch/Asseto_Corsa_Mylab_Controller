@@ -17,7 +17,7 @@ void lcd_write_cmd(uint8_t cmd);
 void lcd_write_data(uint8_t data);
 void delay(int ms);
 void write_color(int r, int g, int b);
-void whipe_screen();
+void wipe_screen();
 void set_draw_window(int start_x, int start_y, int size_x, int size_y);
 void write_text_small_font(char* text, int r, int g, int b, int back_r, int back_g, int back_b, int x, int y, int max_x);
 void write_letter_small_font(char letter, int r, int g, int b, int back_r, int back_g, int back_b, int x, int y);

@@ -35,17 +35,17 @@ void send_wheel_rotation();
 
 bool is_screen_saver_wheel_displaying = false;
 
-void wheel_display_screen_saver(){
-	whipe_screen();
+int can_watchdog = 0;
+
+// Wipe screen and display the name of the card
+void wheel_display_screen_saver()
+{
+	wipe_screen();
 	gui_reset_values();
 	gui_display_shift_indicator_leds(0, CAR_MAX_RPM); //reset dipswitch lights
 	gui_draw_screen_saver(50, 170, "Driving Wheel");
 	is_screen_saver_wheel_displaying = true;
 }
-
-
-
-int can_watchdog = 0;
 
 void driving_wheel_main()
 {
@@ -107,14 +107,14 @@ void can_wheel_recieve_handler()
 
 	can_get_message(&received_id, &received_data);
 
-	if(received_data[0] == CAN_SPEED_DATA_NUMBER)
+	if(received_data[0] == CAN_SPEED_DATA_NUMBER) // If received the speed of the car
 	{
 		uint32_t speed = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
 		gui_draw_speed(80, 30, speed);
 
 		gui_draw_speedometer(120, 160, 80, speed);
 	}
-	else if(received_data[0] == CAN_RPM_DATA_NUMBER)
+	else if(received_data[0] == CAN_RPM_DATA_NUMBER) // If received the RPM of the engine
 	{
 		uint32_t engine_RPM = (received_data[1] + (received_data[2] << 8) + (received_data[3] << 16) + (received_data[4] << 24));
 
@@ -123,6 +123,9 @@ void can_wheel_recieve_handler()
 
 	can_watchdog = get_ms_counter();
 }
+
+
+// BTNS interrupts handlers
 
 void btn_a_rising_handler()
 {
@@ -156,6 +159,10 @@ void btn_b_falling_handler()
 	can_send(0, 0, 2, data);
 }
 
+
+
+
+// Defines used to calculate the angle of the wheel
 #define ABS(x)(x > 0 ? x : -x)
 #define ANGLE_FACTOR 40.584510488 // 255 / (2 pi), 255 as it is max value
 #define PI 3.141592654

@@ -47,7 +47,7 @@ void lcd_init()
 	ssp_init(7, 0);
 	ILI9341_Initial();
 
-	whipe_screen();
+	wipe_screen();
 }
 
 void lcd_write_cmd(uint8_t cmd)
@@ -100,7 +100,7 @@ void write_color(int r, int g, int b)
 	lcd_write_data(second_data);
 }
 
-void whipe_screen()
+void wipe_screen()
 {
 	set_draw_window(0, 0, 240, 320);
 

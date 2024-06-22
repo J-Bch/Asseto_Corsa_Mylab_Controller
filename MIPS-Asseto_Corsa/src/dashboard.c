@@ -27,7 +27,7 @@
 #define LEDS_R_UART		(1 << 4)
 #define LEDS_T_UART		(1 << 3)
 
-
+void dashboard_reset_uart_communication();
 void can_dashboard_recieve_handler();
 void abs_touch_button_plus(int state);
 void abs_touch_button_minus(int state);
@@ -71,8 +71,10 @@ static char sync_marker = 255;
 
 inputs_t inputs = {0};
 
-void dashboard_display_screen_saver(){
-	whipe_screen();
+// Wipe screen and display the name of the card
+void dashboard_display_screen_saver()
+{
+	wipe_screen();
 	gui_reset_values();
 	gui_draw_screen_saver(50, 170, "Dashboard");
 	is_screen_saver_dashboard_displaying = true;
@@ -119,7 +121,7 @@ void dashboard_main()
 
 	while(1)
 	{
-
+		
 		if(uart_get_char(&buffer[i])){
 			uart_watchdog = get_ms_counter();
 			i++;
@@ -136,6 +138,7 @@ void dashboard_main()
 
 			uart_telemetry* telem = (uart_telemetry*)buffer;
 
+			// Check the counter and see if it matches
 			if(internal_message_counter != telem->message_counter)
 			{
 				// this means a paquet was lost
@@ -150,11 +153,14 @@ void dashboard_main()
 				continue;
 			}
 
-			if(is_screen_saver_dashboard_displaying)
+			if(is_screen_saver_dashboard_displaying) // Remove the screen saver text to be able to use the screen again
 			{
 				gui_clear_screen_saver(50, 170, "Dashboard");
 				is_screen_saver_dashboard_displaying = false;
 			}
+
+
+			// ABS text
 
 			if(telem->is_abs_enabled)
 			{
@@ -167,6 +173,9 @@ void dashboard_main()
 				draw_square(10, 20, 8*sizeof("ABS enabled"), SMALL_FONT_HEIGHT, 0, 0, 0);
 				abs_text_whiped = true;
 			}
+
+
+			// TC text
 
 			if(telem->is_tc_enabled)
 			{
@@ -186,7 +195,7 @@ void dashboard_main()
 			gui_draw_lap_time(10, 0, telem->lap_time);
 
 
-			//Send speed
+			//Send speed to the driving wheel
 			uint8_t data[8] = { 0 };
 			uint32_t speed_adjusted = (uint32_t)telem->speed_kmh;
 			data[0] = CAN_SPEED_DATA_NUMBER;
@@ -197,7 +206,7 @@ void dashboard_main()
 			can_send(0, 0, 5, data);
 
 
-			//Send engine RPM
+			//Send engine RPM to the driving wheel
 			data[0] = CAN_RPM_DATA_NUMBER;
 			data[1] = (telem->engine_RPM & 0xFF);
 			data[2] = ((telem->engine_RPM  >> 8) & 0xFF);
@@ -210,6 +219,7 @@ void dashboard_main()
 
 			LPC_GPIO2->FIOCLR = LEDS_R_UART;
 
+			// init the touchscreen & buttons on first message received
 			if(internal_message_counter==1){
 				touch_init(touch_buttons, GET_BUTTONS_COUNT(touch_buttons));
 			}
@@ -248,7 +258,7 @@ void can_dashboard_recieve_handler()
 
 	can_get_message(&received_id, &received_data);
 
-	if(received_data[0] == CAN_BTN_A_DATA_NUMBER)
+	if(received_data[0] == CAN_BTN_A_DATA_NUMBER) // If BTN A pressed
 	{
 		LPC_GPIO2->FIOSET = LEDS_R_A;
 		if(received_data[1] == 1) {
@@ -262,7 +272,7 @@ void can_dashboard_recieve_handler()
 
 		LPC_GPIO2->FIOCLR = LEDS_R_A;
 	}
-	else if(received_data[0] == CAN_BTN_B_DATA_NUMBER)
+	else if(received_data[0] == CAN_BTN_B_DATA_NUMBER) // If BTN B pressed
 	{
 		LPC_GPIO2->FIOSET = LEDS_R_B;
 		if(received_data[1] == 1){
@@ -276,7 +286,7 @@ void can_dashboard_recieve_handler()
 
 		LPC_GPIO2->FIOCLR = LEDS_R_B;
 	}
-	else if(received_data[0] == CAN_WHEEL_ROTATION)
+	else if(received_data[0] == CAN_WHEEL_ROTATION) // If driving wheel turned
 	{
 		LPC_GPIO2->FIOSET = LEDS_R_ROTATION;
 		// 255 is protected value

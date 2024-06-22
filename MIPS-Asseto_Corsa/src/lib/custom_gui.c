@@ -30,6 +30,8 @@ bool first_draw_accel_bar = true;
 bool first_draw_speed = true;
 bool first_display_leds = true;
 
+
+// Reset all the internal values used to display gui
 void gui_reset_values()
 {
 	previous_accel_bar_height = 0;
@@ -136,11 +138,14 @@ void gui_draw_screen_saver(int x, int y, char* text)
 	write_text_small_font(text, 31, 0, 0, 0, 0, 0, x, y, 240);
 }
 
+// Draw a rectangle on top of the old text to clear it
 void gui_clear_screen_saver(int x, int y, char* text)
 {
 	draw_square(x, y, strlen(text)*SMALL_FONT_WIDTH, SMALL_FONT_HEIGHT, 0, 0, 0);
 }
 
+
+// calculate the end point of the line of the speedometer, used to draw the needle
 void calculate_end_point(int x, int y, int radius, int max_v, int v, int *x_end, int *y_end)
 {
     float theta = ((float)v / max_v -1) * 3.14; //calculate the ratio between v and vmax and convert it in a rad angle
@@ -154,14 +159,16 @@ void gui_draw_speedometer(int x, int y, int radius, int speed)
 	int x_end;
 	int y_end;
 
-	draw_line(x, y, previous_x_end_speedo, previous_y_end_speedo, 0, 0, 0);
+	draw_line(x, y, previous_x_end_speedo, previous_y_end_speedo, 0, 0, 0); // clear the old needle
 
 	calculate_end_point(x, y, radius, 200, speed, &x_end, &y_end);
-    draw_line(x, y, (int)x_end, (int)y_end, 31, 63, 31);
+    draw_line(x, y, (int)x_end, (int)y_end, 31, 63, 31); // Draw the new needle
 
     previous_x_end_speedo = x_end;
     previous_y_end_speedo = y_end;
 
+
+	//Create the whole speedo, with numbers and circles
     if(first_draw_speedo)
 	{
 		first_draw_speedo = false;

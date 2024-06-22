@@ -17,8 +17,6 @@
 #define BTN_B 19 // P0.19
 #define BTN_A 10 // P2.10
 
-//if(((LPC_GPIO0->FIOPIN >> BTN_B) & 0b1) == 0) // BTN B pressed
-
 void btns_init()
 {
 	LPC_GPIO0->FIODIR &= (~(0b1) << BTN_B); //set btn b to input
