@@ -126,7 +126,7 @@
 \definecolor{dkRed}{RGB}{204,0,0}
 \definecolor{ltGrey}{RGB}{150,150,150}
 \definecolor{ltGrey2}{RGB}{240,240,240}
-\definecolor{orange-yellow}{RGB}{250,200,0}
+\definecolor{orange-yellow}{RGB}{250,150,0}
 
 
 \mdfdefinestyle{Question}{backgroundcolor = black!5, linecolor=black!10, linewidth=2pt}
@@ -158,7 +158,7 @@
 	urlcolor=blue,
 }
 
-\bibliography{Others/Bibliography.bib}
+\bibliography{Bibliography.bib}
 
 \AtEveryCitekey
 {
@@ -257,6 +257,7 @@
 	
 	{\hypersetup{hidelinks} \listoffigures}
 	
+	
 	\addcontentsline{toc}{section}{Table des extraits de code}
 	{\hypersetup{hidelinks} \lstlistoflistings}
 	
@@ -281,12 +282,23 @@
 
     \subsection{Présentation du projet}
 
-    Le projet que nous avons choisi consiste à développer une sorte de manette de jeu pour jouer au simulateur de course automobile "Assetto Corsa". 
+    Le projet que nous avons choisi consiste à développer une sorte de manette de jeu pour jouer au simulateur de course automobile "Assetto Corsa"\footcite{asseto}. 
 	
 	Voici une description de l'utilisation des deux MyLab2 : 
 	Une des deux cartes sert de volant, grâce à l'accéléromètre, avec des boutons pour l'accélérateur et le frein. Les LEDS du dipswitchs sont utilisées comme indicateur de compte-tours. L'autre carte sert de tableau de bord affichant la télémétrie du jeu et ayant un ensemble de boutons pour permettre quelques inputs supplémentaires.
 
-	% //TODO add final physical image of the setup
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.55\textwidth]{Images/both_flat.jpg}
+		\caption{Image du volant et du tableau de bord}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.55\textwidth]{Images/both_with_screen.jpg}
+		\caption{Image du jeu avec volant et tableau de bord}
+	\end{figure}
+
 
     \section{Architecture}
 
@@ -304,52 +316,22 @@
 			
         \subsection{Implémentation côté PC}
 
-        Du côté du PC se trouve Assetto Corsa, un jeu de voiture ainsi qu'un script python tournant en arrière-plan. Ce script python se charge de récupérer la télémétrie d'Assetto Corsa à travers un socket UDP mis à disposition par le jeu (il s'agit d'une méthode d'accès à la télémétrie courante dans le monde des simulateurs). Le python récupère alors les informations qui l'intéressent et les envoie sur l'UART vers le "Tableau de bord", autrement dit l'une des deux cartes. 
+        Du côté du PC se trouve Assetto Corsa, un jeu de voiture ainsi qu'un script python tournant en arrière-plan. Ce script python se charge de récupérer la télémétrie d'Assetto Corsa à travers un socket UDP mis à disposition par le jeu\footcite{telem}\footcite{telem_cli} (il s'agit d'une méthode d'accès à la télémétrie courante dans le monde des simulateurs). Le python récupère alors les informations qui l'intéressent et les envoie sur l'UART vers le "Tableau de bord", autrement dit l'une des deux cartes. 
 		
-		Depuis cette même connexion UART, le script récupère les inputs (inclinaison du volant, pression des boutons, etc.) sous forme de tableau d'octets envoyé par la carte tableau de bord. Ces informations sont ensuite transmises à une classe "Gamepad" qui simule un périphérique qui est ensuite utilisée par le jeu comme un n'importe quel autre périphérique/manette/etc et qui est ainsi utilisable en jeu.
+		Depuis cette même connexion UART, le script récupère les inputs (inclinaison du volant, pression des boutons, etc.) sous forme de tableau d'octets envoyé par la carte tableau de bord. Ces informations sont ensuite transmises à une classe "Gamepad" qui simule un périphérique qui est ensuite utilisée par le jeu comme un n'importe quel autre périphérique/manette/etc.
 
-		Le script gère les coupures de connexion avec le jeu et/ou la carte, tout comme les cartes gèrent les pertes de connexion entre elles et avec le PC, affichant la situation actuelle à l'utilisateur de la manière suivante:
-
-		```
-		AC TELEMETRY & VIRTUAL GAMEPAD:
-		-------------------------------------
-
-		Assetto Corsa link : NOT CONNECTED                         
-		Dashboard link     : NOT CONNECTED   
-		```
-
-		Les états possibles pour "Assetto Corsa link" sont:
-
-		\begin{enumerate}
-			\item "NOT CONNECTED", la connection n'a pas encore été établie
-			\item "TRYING HANDSHAKE", le script tente de faire un handshake avec Assettot Corsa dans le but de recevoir les données de télémetrie
-			\item "TIMEOUT", le script n'as pas reçu de réponse de la part d'Assetto Corsa depuis un moment, indiquant que le jeu s'est arrêté ou qu'il y a un problème
-			\item "CONNECTED". le script reçoit les données correctement
-		\end{enumerate}
-
-		Les états possibles pour "Dashboard link" sont: 
-
-		\begin{enumerate}
-			\item "NOT CONNECTED", le câble UART n'est pas branché
-			\item "RESETING", le script se reset pour corriger un problème de mismatch avec le dashboard 
-			\item "TIMEOUT", le script n'a pas reçu de donnée du dashboard depuis un moment
-			\item "CONNECTED". le script reçoit les inputs du dashboard correctement
-		\end{enumerate}
-
-		% //TODO mettre une image du jeu avec le script qui toure à côté
-
+		
 		\subsubsection{Détails du protocole entre le PC et le tableau de bord}
 		\label{telemetrie}
 
-			Le code python s'exécutant sur le PC être chargé d'à la fois envoyer les données de télémétrie mais aussi de recevoir les inputs provenant du tableau de bord.
+			Le code python s'exécutant sur le PC est chargé à la fois d'envoyer les données de télémétrie, mais aussi de recevoir les inputs provenant du tableau de bord.
 
-			Pour l'envoi de la télémétrie, il envoie en UART un ensemble de données de télémétrie récupérées via le port UDP du jeu. Voici l'ensemble des données composant une trame :
+			Pour l'envoi de la télémétrie, il envoie en UART un ensemble de données récupérées via le port UDP du jeu. Voici l'ensemble des données composant une trame :
 
 			\begin{lstlisting}[language=python, caption=Données télémétriques envoyées par le python]
 uart.serial_send(struct.pack("?", False)) #reset screen bool
 uart.serial_send(struct.pack("f", live_data['speed_Kmh']))
 uart.serial_send(struct.pack("I", live_data['lapTime']))
-uart.serial_send(struct.pack("f", live_data['wheelAngularSpeed_0']))
 uart.serial_send(struct.pack("f", live_data['gas']))
 uart.serial_send(struct.pack("f", live_data['brake']))
 uart.serial_send(struct.pack("I", int(live_data["engineRPM"])))
@@ -368,7 +350,6 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 	bool stop_display;
 	float speed_kmh;
 	uint32_t lap_time;
-	float wheel_angular_speed_0;
 	float gas;
 	float brake;
 	uint32_t engine_RPM;
@@ -390,15 +371,50 @@ typedef struct __attribute__ ((__packed__)) _uart_telemetry
 MESSAGE_SENT_WAIT_MICROSECONDS = 100000
 \end{lstlisting}
 
-		Si l'envoi devient trop rapide, il est possible que le tableau de bord n'arrive pas à suivre et doive alors se réinitialiser en permanance.
+		Si l'envoi devient trop rapide, il est possible que le tableau de bord n'arrive pas à suivre et doive alors se réinitialiser en permanence.
+
+
+		Le script gère les coupures de connexion avec le jeu et/ou la carte, tout comme les cartes gèrent les pertes de connexion entre elles et avec le PC, affichant la situation actuelle à l'utilisateur de la manière suivante :
+
+		\begin{lstlisting}
+		AC TELEMETRY & VIRTUAL GAMEPAD:
+		-------------------------------------
+		
+		Assetto Corsa link : NOT CONNECTED                         
+		Dashboard link     : NOT CONNECTED   
+		\end{lstlisting}
+		
+				Les états possibles pour "Assetto Corsa link" sont:
+		
+				\begin{enumerate}
+					\item "NOT CONNECTED", la connexion n'a pas encore été établie.
+					\item "TRYING HANDSHAKE", le script tente de faire un handshake avec Assetto Corsa dans le but de recevoir les données de télémétrie.
+					\item "TIMEOUT", le script n'as pas reçu de réponse de la part d'Assetto Corsa depuis un moment, indiquant que le jeu s'est arrêté ou qu'il y a un problème.
+					\item "CONNECTED", le script reçoit les données correctement.
+				\end{enumerate}
+		
+				Les états possibles pour "Dashboard link" sont : 
+		
+				\begin{enumerate}
+					\item "NOT CONNECTED", le câble UART n'est pas branché.
+					\item "RESETING", le script se reset pour corriger un problème de mismatch avec le dashboard.
+					\item "TIMEOUT", le script n'a pas reçu de donnée du dashboard depuis un moment
+					\item "CONNECTED", le script reçoit les inputs du dashboard correctement.
+				\end{enumerate}
 
         \subsection{MyLab2 Volant}
 
 		La carte MyLab2 servant de volant est celle tenue entre les mains du joueur. Son rôle est de simuler un volant de course et doit ainsi permettre de guider la voiture, mais aussi de contrôler l'accélérateur, les freins et d'afficher quelques informations sur la voiture.
 
-        Le volant s'occupe alors de récupérer les valeurs de son accéléromètre et de les convertir en un angle. Il envoie en continu le résultat de ce calcul par CAN à a carte servant de tableau de bord. Lors de l'appui sur le bouton A ou B, un message CAN est transmis immédiatement au tableau de bord. 
+        Le volant s'occupe alors de récupérer les valeurs de son accéléromètre et de les convertir en un angle. Il envoie en continu le résultat de ce calcul par CAN à la carte servant de tableau de bord. Lors de l'appui sur le bouton A ou B, un message CAN est transmis immédiatement au tableau de bord. 
 		
-		Le volant reçoit sur le CAN, les RPM du moteur et la vitesse de la voiture. Ceux-ci seront affichés respectivement sur les LEDS des dipswitchs et sur le LCD sous forme de cadrant avec une aiguille. 
+		Le volant reçoit sur le CAN les RPM du moteur et la vitesse de la voiture. Ceux-ci seront affichés respectivement sur les LEDS des dipswitchs et sur le LCD sous forme de cadrant avec une aiguille. 
+
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.55\textwidth]{Images/mylab_wheel.jpg}
+			\caption{Image du volant}
+		\end{figure}
 
 		\subsubsection{Modifications du protocole CAN}
 		\label{CAN}
@@ -426,7 +442,7 @@ else if(received_data[0] == CAN_RPM_DATA_NUMBER)
 }
 \end{lstlisting}
 
-
+\newpage
 		Voici l'ensemble des commandes différentes possibles actuellement : 
 
 \begin{lstlisting}[language=c, caption=Liste des commandes CAN disponibles]
@@ -438,30 +454,60 @@ else if(received_data[0] == CAN_RPM_DATA_NUMBER)
 #define CAN_WHEEL_ROTATION 5
 \end{lstlisting}
 
-		% //TODO mettre une image de près du volant
         
         \subsection{MyLab2 Tableau de bord}
 
         Le tableau de bord est la pièce centrale du projet : cette carte sert d'intermédiaire entre le volant et le PC. Le tableau de bord reçoit à travers l'UART (Ref section \ref{telemetrie}) la télémétrie venant du jeu, dont il affiche l'accélérateur et le frein, mais aussi le temps du tour (lap time). Il retransmet ensuite la vitesse et les RPM au volant via CAN (Ref section \ref{CAN}). De celui-ci il récupère la rotation et les boutons, qu'il stocke dans un tableau local. Toutes les 20ms, il envoie alors ce tableau par la même connexion UART pour que le PC puisse interpréter les inputs. 
 
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.55\textwidth]{Images/mylab_dashboard.jpg}
+			\caption{Image du tableau de bord}
+		\end{figure}
+
         \subsection{Matériel}    
 
-        Pour ce projet nous avons donc besoin :
+        Pour ce projet nous avons donc besoin du matériel suivant :
 
         \begin{enumerate}
             \item 1 PC avec Assetto Corsa et 1 script python permettant d'interfacer avec les cartes
             \item 2 MyLab2 + LPC1769
-            \item 1 câble USB A → micro-USB
+            \item 1 câble USB A → micro-USB (UART)
             \item 1 câble CAN
-            \item Câbles d'alimentation
+            \item 2 Câbles d'alimentation
         \end{enumerate}
 
 
 	\section{Problèmes rencontrés}
 
-	Initialement il avait été prévu que les cartes soient utilisé en tant périphériques USB. Cependant, il s'avère que c'est un protocole relativement sensible et précis, rendant compliqué son implémentation dans un délai aussi court. Heureusement un plan de secours avait été prévu, utiliser un script python couplé à de l'UART pour la transmission des données pour pouvoir simuler un périphérique logiciellement. Cependant, cette solution n'est pas miraculeuse et ne fonctionne pas de manière stable.
+	Initialement il avait été prévu que les cartes soient utilisé en tant périphériques USB. Cependant, il s'avère qu'il s'agit d'un protocole relativement sensible et précis, rendant compliqué son implémentation dans un délai aussi court. Heureusement un plan de secours avait été prévu : utiliser un script python couplé à de l'UART pour la transmission des données pour pouvoir simuler un périphérique logiciellement. Cependant, cette solution n'est pas miraculeuse et ne fonctionne pas de manière 100\% stable.
+
+
+	L'installation du jeu Asseto Corsa sous Linux n'est malheureusement pas aussi simple que ça. Il faut en effet ajouter une couche de compatibilité car il s'agit d'un jeu crée pour Windows. Bien que l'ajout de Proton GE\footcite{proton_ge} aide et permette de lancer le jeu, il est assez fréquent qu'il crash suivant le PC qui le lance. Il arrive par exemple que le jeu freeze complètement lorsqu'il est en plein écran sur l'un de nos PC. De plus, cela ne garanti pas que le jeu fonctionnera toujours ni qu'une mise à jour ne viendra pas le rendre inopérant.
+
+
+	L'utilisation de la librairie python Uinput fut une très grande perte de temps. En effet, le peu de documentation disponible et l'impossibilité de valider le fonctionnement en période de test nous a fait perdre un temps considérable. De plus, nous avons constaté que les modifications (p.ex ajout d'une touche) ne sont pas nécessairement prise en compte immédiatement et qu'il faut parfois redémarrer son ordinateur ou faire redémarrer Uinput (ce qui n'est pas indiqué), ce qui nous a causé d'immenses soucis lors de l'ajout de contrôles.
 
     \section{Conclusion}
+
+		
+	Le résultat de ce projet nous est très satisfaisant. Il est possible de contrôler la voiture avec le volant et le tableau de bord, l'affichage des données en temps réel fonctionne à merveille.
+
+	Cependant, il ne respecte pas entièrement le cahier des charges que nous avions proposés, car il n'utilise malheureusement pas le protocole USB. Cela n'impacte pas la fonctionnalité de l'ensemble, mais il est dommage de ne pas avoir réussi à implémenter ce nouveau périphérique. Rétrospectivement, il nous aurait fallu plus de temps et de connaissances afin d'y parvenir.
+
+	Il serait intéressant de fiabiliser encore plus l'ensemble du projet. Bien que nous ayons implémenté diverses fonctions de reconnexion, redémarrage automatique, contrôle de numéro de trames, il est toujours possible d'améliorer cela afin de le rendre utilisable dans 100\% des cas sans erreurs ou comportement imprévisible.
+
+	Pour conclure, nous souhaitons remercier M. Abegg Christian pour son aide apportée au long de ce travail pratique.
+
+
+
+
+	\addcontentsline{toc}{section}{Références}
+	\newpage
+
+	\nocite{*}
+    \printbibliography
+   
 
 
 
