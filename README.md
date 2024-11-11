@@ -4,6 +4,11 @@
 
 This set of controllers is used to control a car in Asseto Corsa. One card is used as a steering wheel and the other one as a dashboard communicating with the computer, sending inputs to a python script on the host computer.
 
+This project was carried out as students at HEPIA as part of the "MIPS" course.
+
+
+Made by Bach Joachim & Da Silva Marques David.
+
 ### Architecture 
 
 ![architecture drawio](https://github.com/user-attachments/assets/c04697f2-c1f2-45e6-b04f-f88b6537fd67)
