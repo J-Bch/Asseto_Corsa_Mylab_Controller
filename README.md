@@ -1,5 +1,33 @@
 # MIPS Asseto Corsa controller & dashboard
 
+## Project description
+
+This set of controllers is used to control a car in Asseto Corsa. One card is used as a steering wheel and the other one as a dashboard communicating with the computer, sending inputs to a python script on the host computer.
+
+### Architecture 
+
+![architecture drawio](https://github.com/user-attachments/assets/c04697f2-c1f2-45e6-b04f-f88b6537fd67)
+
+
+
+
+## Demo Video
+
+https://github.com/user-attachments/assets/ae3563fd-089c-4aa5-98f8-40012db98897
+
+
+
+
+## Controllers
+
+![both_flat](https://github.com/user-attachments/assets/d53b588e-3de5-4c34-bdfd-3197c1a288be)
+
+With the left controller, you can steer the car, accelerate, brake, see the speed trough the screen & see the RPM indicated by the leds.
+With the right controller, you can see the accelerating and braking percentage, the lap time, increase and decrease Traction Control and ABS.
+
+
+
+
 ## Game install
 
 In order for this project to work, you need to install Asseto Corsa on steam. This needs to have a compatibility layer added BEFORE THE GAME because this is a Windows native game.
